@@ -7,17 +7,20 @@ Requires
 Usage
 =====
 Basic scenario implemented now::
+
 	connection = Connection(username, password)
 	project = connection.get_project('project_name')
 	project.execute_maql(maql)
 	project.transfer(data, sli_manifest)
 
 Working with the project::
+
 	connection = Connection(username, password)
 	project = connection.get_project('project_name')
 	project = connection.create_project('project_name')
 	project.delete()
 	connection.delete_projects_by_name('project_name')
+
 Project operations are handled directly by connection, only the delete of the current project is handled by a project itself.
 
 Features
