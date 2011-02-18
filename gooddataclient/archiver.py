@@ -34,7 +34,7 @@ def write_tmp_csv_file(csv_data, sli_manifest):
     fieldnames = [part['columnName'] for part in sli_manifest['dataSetSLIManifest']['parts']]
     fp, filename = mkstemp()
     file = open(filename, 'w+b')
-    writer = csv.DictWriter(file, fieldnames=fieldnames, 
+    writer = csv.DictWriter(file, fieldnames=fieldnames,
                             delimiter=sli_manifest['dataSetSLIManifest']['csvParams']['separatorChar'],
                             quotechar=sli_manifest['dataSetSLIManifest']['csvParams']['quoteChar'],
                             quoting=csv.QUOTE_ALL)
@@ -119,3 +119,35 @@ def get_xml_schema(column_list, schema_name):
             xmlcol.appendChild(k)
         dom.childNodes[0].childNodes[1].appendChild(xmlcol)
     return dom.toxml()
+
+def get_sli_manifest(column_list, schema_name, dataset_id):
+    parts = []
+    schema_name_id = schema_name # TODO: String ssn = StringUtil.toIdentifier(schema.getName());
+    for column in column_list:
+        col_part = {"columnName": column['name'],
+                    "mode": "FULL",
+                    }
+        if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT', 'REFERENCE',
+                                 'DATE'):
+            col_part["referenceKey"] = 1
+        column_name_id = column['name'] # TODO: String scn = StringUtil.toIdentifier(sc.getName());
+        if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT'):
+            col_part["populates"] = ["label.%s.%s" % (schema_name_id,
+                                                      column_name_id)]
+        if column['ldmType'] in ('LABEL'):
+            culumn_reference_id = column['reference'] # TODO: StringUtil.toIdentifier(sc.getReference())
+            col_part["populates"] = ["label.%s.%s.%s" % (schema_name_id,
+                                                         culumn_reference_id,
+                                                         column_name_id)]
+        parts.append(col_part)
+    return {"dataSetSLIManifest": {
+                   "parts": parts,
+                    "file": CSV_DATA_FILENAME,
+                    "dataSet": dataset_id,
+                    "csvParams": {"quoteChar": '"',
+                                  "escapeChar": '"',
+                                  "separatorChar": ",",
+                                  "endOfLine": "\n"
+                                  }
+                    }}
+
