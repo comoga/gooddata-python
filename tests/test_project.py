@@ -7,7 +7,7 @@ from gooddataclient.archiver import write_tmp_file
 from gooddataclient.exceptions import DataSetNotFoundError
 
 from tests.credentials import password, username
-from tests import examples_data
+from tests.examples import department
 from tests import logger
 
 
@@ -33,13 +33,13 @@ class TestProject(unittest.TestCase):
         self.assertFalse(self.project.execute_maql('CREATE DATASET {dat'))
         self.assertRaises(DataSetNotFoundError, self.project.get_dataset,
                           name='Department')
-        self.assert_(self.project.execute_maql(examples_data.maql))
+        self.assert_(self.project.execute_maql(department.maql))
         self.assert_(self.project.get_dataset(name='Department'))
 
     def test_transfer_data(self):
-        self.project.execute_maql(examples_data.maql)
-        dir_name = self.project.transfer(examples_data.data,
-                                         examples_data.sli_manifest)
+        self.project.execute_maql(department.maql)
+        dir_name = self.project.transfer(department.data,
+                                         department.sli_manifest)
         self.assert_(len(dir_name) > 0)
         self.assert_(self.connection.request('/uploads/%s' % dir_name,
                                              host=Connection.WEBDAV_HOST))

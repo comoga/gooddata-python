@@ -6,23 +6,23 @@ from xml.dom.minidom import parseString
 from gooddataclient.archiver import create_archive, write_tmp_csv_file, \
     get_xml_schema, get_sli_manifest
 
-from tests import examples_data
+from tests.examples import department 
 from tests import logger
 
 
 class TestArchiver(unittest.TestCase):
 
     def test_csv(self):
-        csv_filename = write_tmp_csv_file(examples_data.data_list, examples_data.sli_manifest)
+        csv_filename = write_tmp_csv_file(department.data_list, department.sli_manifest)
         f = open(csv_filename, 'r')
         content = f.read()
         f.close()
         os.remove(csv_filename)
-        self.assertEqual(examples_data.data, content)
+        self.assertEqual(department.data, content)
 
 
     def test_archive(self):
-        filename = create_archive(examples_data.data, examples_data.sli_manifest)
+        filename = create_archive(department.data, department.sli_manifest)
         zip_file = ZipFile(filename, "r")
         self.assertEquals(None, zip_file.testzip())
         self.assertEquals(zip_file.namelist(), ['data.csv', 'upload_info.json'])
@@ -30,16 +30,18 @@ class TestArchiver(unittest.TestCase):
         os.remove(filename)
 
     def test_schema(self):
-        schema = parseString(examples_data.schema)
-        gen_schema = parseString(get_xml_schema(examples_data.columns, 'DealOrder'))
+        schema = parseString(department.schema.replace(' ', '').replace('\n', ''))
+        gen_schema = parseString(get_xml_schema(department.column_list, 'Department'))
         self.assertEqual(len(schema.childNodes), len(gen_schema.childNodes))
-        self.assertEqual(len(schema.childNodes[0].childNodes), len(gen_schema.childNodes[0].childNodes))
+        self.assertEqual(len(schema.childNodes[0].childNodes), len(gen_schema.childNodes[0].childNodes), 
+                         '%s != %s' % (', '.join(n.nodeName for n in schema.childNodes[0].childNodes),
+                                       ', '.join(n.nodeName for n in gen_schema.childNodes[0].childNodes)))
         self.assertEqual(len(schema.childNodes[0].childNodes[1].childNodes), len(gen_schema.childNodes[0].childNodes[1].childNodes))
 
     def test_sli_manifest(self):
-        sli_manifest = get_sli_manifest(examples_data.department_column_list,
+        sli_manifest = get_sli_manifest(department.column_list,
                                         'department', 'dataset.department')
-        self.assertEqual(examples_data.sli_manifest, sli_manifest)
+        self.assertEqual(department.sli_manifest, sli_manifest)
 
 
 if __name__ == '__main__':
