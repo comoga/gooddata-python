@@ -18,11 +18,11 @@ class TestArchiver(unittest.TestCase):
         content = f.read()
         f.close()
         os.remove(csv_filename)
-        self.assertEqual(department.data, content)
+        self.assertEqual(department.data_csv, content)
 
 
     def test_archive(self):
-        filename = create_archive(department.data, department.sli_manifest)
+        filename = create_archive(department.data_csv, department.sli_manifest)
         zip_file = ZipFile(filename, "r")
         self.assertEquals(None, zip_file.testzip())
         self.assertEquals(zip_file.namelist(), ['data.csv', 'upload_info.json'])
@@ -30,7 +30,7 @@ class TestArchiver(unittest.TestCase):
         os.remove(filename)
 
     def test_schema(self):
-        schema = parseString(department.schema.replace(' ', '').replace('\n', ''))
+        schema = parseString(department.schema_xml.replace(' ', '').replace('\n', ''))
         gen_schema = parseString(get_xml_schema(department.column_list, 'Department'))
         self.assertEqual(len(schema.childNodes), len(gen_schema.childNodes))
         self.assertEqual(len(schema.childNodes[0].childNodes), len(gen_schema.childNodes[0].childNodes), 

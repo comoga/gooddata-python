@@ -38,7 +38,7 @@ class TestProject(unittest.TestCase):
 
     def test_transfer_data(self):
         self.project.execute_maql(department.maql)
-        dir_name = self.project.transfer(department.data,
+        dir_name = self.project.transfer(department.data_csv,
                                          department.sli_manifest)
         self.assert_(len(dir_name) > 0)
         self.assert_(self.connection.request('/uploads/%s' % dir_name,
