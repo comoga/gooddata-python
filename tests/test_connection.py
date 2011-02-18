@@ -17,7 +17,7 @@ class TestConnection(unittest.TestCase):
             raise AttributeError, 'Please provide your username and password to your GoodData account (into creadentials.py)'
         self.assertRaises(AuthenticationError, Connection, '', '')
         conn = Connection(username, password)
-        self.assertEquals('', conn.request('/gdc/account/token'))
+        self.assertEquals('', conn.request('/gdc/account/token').read())
         self.assert_(conn.request('/uploads', host=Connection.WEBDAV_HOST))
 
     def test_create_and_delete_project(self):
