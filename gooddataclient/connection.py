@@ -89,7 +89,7 @@ class Connection(object):
             response = urllib2.urlopen(request)
         except urllib2.URLError, err:
             #webdav "errors"
-            if err.code in (201, 204, 207):
+            if hasattr(err, 'code') and err.code in (201, 204, 207):
                 return True
             else:
                 logger.error(err)

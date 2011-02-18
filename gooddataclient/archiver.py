@@ -73,7 +73,6 @@ def write_tmp_zipfile(files):
     os.close(fp)
     return filename
 
-
 def create_archive(data, sli_manifest):
     '''Zip the data and sli_manifest files to an archive. 
     Remember to os.remove(filename) after use.
@@ -95,6 +94,21 @@ def create_archive(data, sli_manifest):
     os.remove(data_path)
     os.remove(sli_manifest_path)
     return filename
+
+def csv_to_list(data_csv):
+    '''Create list of dicts from CSV string.
+    
+    @param data_csv: CSV in a string
+    '''
+    reader = csv.reader(data_csv.strip().split('\n'))
+    header = reader.next()
+    data_list = []
+    for line in reader:
+        l = {}
+        for i, value in enumerate(header):
+            l[value] = line[i]
+        data_list.append(l)
+    return data_list
 
 def get_xml_schema(column_list, schema_name):
     '''Create XML schema from list of columns in dicts. It's used to create
@@ -120,34 +134,57 @@ def get_xml_schema(column_list, schema_name):
         dom.childNodes[0].childNodes[1].appendChild(xmlcol)
     return dom.toxml()
 
+
+def identifier(text):
+    # TODO: more complex in StringUtil.java:79 convertToIdentifier
+    return text.lower()
+
+def get_column_populates(column, schema_name):
+    schema_name_id = identifier(schema_name)
+    column_name_id = identifier(column['name'])
+    if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT'):
+        return ["label.%s.%s" % (schema_name_id, column_name_id)]
+    if column['ldmType'] in ('LABEL'):
+        return ["label.%s.%s.%s" % (schema_name_id,
+                                    identifier(column['reference']),
+                                    column_name_id)]
+    if column['ldmType'] in ('REFERENCE'):
+        return ["label.%s.%s" % (identifier(column['schemaReference']),
+                                 identifier(column['reference']))]
+    if column['ldmType'] in ('FACT'):
+        return ["fact.%s.%s" % (schema_name_id, column_name_id)]
+    if column['ldmType'] in ('DATE'):
+        return ["%s.date.mdyy" % identifier(column['schemaReference'])]
+    raise AttributeError, 'Nothing to populate'
+
 def get_sli_manifest(column_list, schema_name, dataset_id):
     parts = []
-    schema_name_id = schema_name # TODO: String ssn = StringUtil.toIdentifier(schema.getName());
     for column in column_list:
+        # special additional column for date
+        if column['ldmType'] == 'DATE':
+            # TODO: dynamic, working just for current test data
+            parts.append({'populates': ['dt.salary.payday'], 'columnName': 'payday_dt', 'mode': 'FULL'})
+
         col_part = {"columnName": column['name'],
                     "mode": "FULL",
                     }
         if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT', 'REFERENCE',
                                  'DATE'):
             col_part["referenceKey"] = 1
-        column_name_id = column['name'] # TODO: String scn = StringUtil.toIdentifier(sc.getName());
-        if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT'):
-            col_part["populates"] = ["label.%s.%s" % (schema_name_id,
-                                                      column_name_id)]
-        if column['ldmType'] in ('LABEL'):
-            culumn_reference_id = column['reference'] # TODO: StringUtil.toIdentifier(sc.getReference())
-            col_part["populates"] = ["label.%s.%s.%s" % (schema_name_id,
-                                                         culumn_reference_id,
-                                                         column_name_id)]
+        if 'format' in column:
+            col_part['constraints'] = {'date': column['format']}
+        try:
+            col_part['populates'] = get_column_populates(column, schema_name)
+        except AttributeError:
+            pass
         parts.append(col_part)
-    return {"dataSetSLIManifest": {
-                   "parts": parts,
-                    "file": CSV_DATA_FILENAME,
-                    "dataSet": dataset_id,
-                    "csvParams": {"quoteChar": '"',
-                                  "escapeChar": '"',
-                                  "separatorChar": ",",
-                                  "endOfLine": "\n"
-                                  }
-                    }}
+
+    return {"dataSetSLIManifest": {"parts": parts,
+                                   "file": CSV_DATA_FILENAME,
+                                   "dataSet": dataset_id,
+                                   "csvParams": {"quoteChar": '"',
+                                                 "escapeChar": '"',
+                                                 "separatorChar": ",",
+                                                 "endOfLine": "\n"
+                                                 }}}
 

@@ -7,8 +7,7 @@ from gooddataclient.archiver import write_tmp_file
 from gooddataclient.exceptions import DataSetNotFoundError
 
 from tests.credentials import password, username
-from tests.examples import department
-from tests import logger
+from tests import logger, examples
 
 
 TEST_PROJECT_NAME = 'gdc_unittest'
@@ -31,31 +30,33 @@ class TestProject(unittest.TestCase):
 
     def test_create_structure(self):
         self.assertFalse(self.project.execute_maql('CREATE DATASET {dat'))
-        self.assertRaises(DataSetNotFoundError, self.project.get_dataset,
-                          name='Department')
-        self.assert_(self.project.execute_maql(department.maql))
-        self.assert_(self.project.get_dataset(name='Department'))
+        for example in examples.examples:
+            self.assertRaises(DataSetNotFoundError, self.project.get_dataset,
+                              name=example.schema_name)
+            self.assert_(self.project.execute_maql(example.maql), example.maql)
+            self.assert_(self.project.get_dataset(name=example.schema_name))
 
     def test_transfer_data(self):
-        self.project.execute_maql(department.maql)
-        dir_name = self.project.transfer(department.data_csv,
-                                         department.sli_manifest)
-        self.assert_(len(dir_name) > 0)
-        self.assert_(self.connection.request('/uploads/%s' % dir_name,
-                                             host=Connection.WEBDAV_HOST))
-        uploaded_file = self.connection.request('/uploads/%s/upload.zip' % dir_name,
-                                                host=Connection.WEBDAV_HOST)
-        tmp_file = write_tmp_file(uploaded_file.read())
-        zip_file = ZipFile(tmp_file, "r")
-        self.assertEquals(None, zip_file.testzip())
-        self.assertEquals(zip_file.namelist(), ['data.csv', 'upload_info.json'])
-        zip_file.close()
-        os.remove(tmp_file)
-        dataset = self.project.get_dataset(name='Department')
-        self.assert_(dataset['dataUploads'])
-        self.assertEquals('OK', dataset['lastUpload']['dataUploadShort']['status'])
-        self.connection.request('/uploads/%s/' % dir_name, host=Connection.WEBDAV_HOST,
-                                method='DELETE')
+        for example in examples.examples:
+            self.project.execute_maql(example.maql)
+            dir_name = self.project.transfer(example.data_csv,
+                                             example.sli_manifest)
+            self.assert_(len(dir_name) > 0)
+            self.assert_(self.connection.request('/uploads/%s' % dir_name,
+                                                 host=Connection.WEBDAV_HOST))
+            uploaded_file = self.connection.request('/uploads/%s/upload.zip' % dir_name,
+                                                    host=Connection.WEBDAV_HOST)
+            tmp_file = write_tmp_file(uploaded_file.read())
+            zip_file = ZipFile(tmp_file, "r")
+            self.assertEquals(None, zip_file.testzip())
+            self.assertEquals(zip_file.namelist(), ['data.csv', 'upload_info.json'])
+            zip_file.close()
+            os.remove(tmp_file)
+            dataset = self.project.get_dataset(name=example.schema_name)
+            self.assert_(dataset['dataUploads'])
+            self.assertEquals('OK', dataset['lastUpload']['dataUploadShort']['status'])
+            self.connection.request('/uploads/%s/' % dir_name, host=Connection.WEBDAV_HOST,
+                                    method='DELETE')
 
 
 
