@@ -1,8 +1,11 @@
 import os
+import csv
 import simplejson as json
 from tempfile import mkstemp
 from zipfile import ZipFile
-
+import datetime
+import hashlib
+from xml.dom.minidom import parseString
 
 DLI_MANIFEST_FILENAME = 'upload_info.json'
 CSV_DATA_FILENAME = 'data.csv'
@@ -19,6 +22,38 @@ def write_tmp_file(content):
     fp, filename = mkstemp()
     file = open(filename, 'w+b')
     file.write(content)
+    os.close(fp)
+    return filename
+
+def write_tmp_csv_file(csv_data, sli_manifest):
+    '''Write a CSV temporary file with values in csv_data - list of dicts.
+    
+    @param csv_data: list of dicts
+    @param sli_manifest: json sli_manifest
+    '''
+    fieldnames = [part['columnName'] for part in sli_manifest['dataSetSLIManifest']['parts']]
+    fp, filename = mkstemp()
+    file = open(filename, 'w+b')
+    writer = csv.DictWriter(file, fieldnames=fieldnames, 
+                            delimiter=sli_manifest['dataSetSLIManifest']['csvParams']['separatorChar'],
+                            quotechar=sli_manifest['dataSetSLIManifest']['csvParams']['quoteChar'],
+                            quoting=csv.QUOTE_ALL)
+    headers = dict((n, n) for n in fieldnames)
+    writer.writerow(headers)
+    for line in csv_data:
+        for key in fieldnames:
+            #some incredible magic with additional date field
+            if not key in line and key.endswith('_dt'):
+                h = hashlib.md5()
+                h.update(line[key[:-3]])
+                line[key] = h.hexdigest()[:6]
+            #formatting the date properly
+            if isinstance(line[key], datetime.datetime):
+                line[key] = line[key].strftime("%Y-%m-%d")
+            #make 0/1 from bool
+            if isinstance(line[key], bool):
+                line[key] = int(line[key])
+        writer.writerow(line)
     os.close(fp)
     return filename
 
@@ -48,7 +83,10 @@ def create_archive(data, sli_manifest):
     
     return the filename to the temporary zip file
     '''
-    data_path = write_tmp_file(data)
+    if isinstance(data, list):
+        data_path = write_tmp_csv_file(data, sli_manifest)
+    else:
+        data_path = write_tmp_file(data)
     sli_manifest_path = write_tmp_file(json.dumps(sli_manifest))
     filename = write_tmp_zipfile((
                    (data_path, CSV_DATA_FILENAME),
@@ -57,3 +95,27 @@ def create_archive(data, sli_manifest):
     os.remove(data_path)
     os.remove(sli_manifest_path)
     return filename
+
+def get_xml_schema(column_list, schema_name):
+    '''Create XML schema from list of columns in dicts. It's used to create
+    MAQL through the Java Client.
+    
+    The column_list looks like this: 
+    [{'name': 'id', 'title': 'Id', 'ldmType': 'ATTRIBUTE', 'folder': 'X'},
+     {'name': 'price', 'title': 'Price', 'ldmType': 'FACT', 'dataType': 'DECIMAL', 'folder': 'X'},
+    ...
+    ]
+    
+    @param column_list: List of columns
+    @param schema_name: name of the schema
+    '''
+    dom = parseString('<schema><name>%s</name><columns></columns></schema>' % schema_name)
+    for column in column_list:
+        xmlcol = dom.createElement('column')
+        for key, val in column.iteritems():
+            k = dom.createElement(key)
+            v = dom.createTextNode(val)
+            k.appendChild(v)
+            xmlcol.appendChild(k)
+        dom.childNodes[0].childNodes[1].appendChild(xmlcol)
+    return dom.toxml()

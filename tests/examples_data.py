@@ -45,7 +45,23 @@ data = '''"department","name"
 "d16","Store Temporary Checkers"
 "d17","Store Permanent Stockers"
 "d18","Store Temporary Stockers"
-"d19","Store Permanent Butchers"'''
+"d19","Store Permanent Butchers"
+'''
+
+#data from django model like Department.object.values('department', 'name')
+data_list = [{'department': u'd1', 'name': u'HQ General Management'},
+        {'department': u'd2', 'name': u'HQ Information Systems'},
+        {'department': u'd3', 'name': u'HQ Marketing'},
+        {'department': u'd4', 'name': u'HQ Human Resources'},
+        {'department': u'd5', 'name': u'HQ Finance and Accounting'},
+        {'department': u'd11', 'name': u'Store Management'},
+        {'department': u'd14', 'name': u'Store Information Systems'},
+        {'department': u'd15', 'name': u'Store Permanent Checkers'},
+        {'department': u'd16', 'name': u'Store Temporary Checkers'},
+        {'department': u'd17', 'name': u'Store Permanent Stockers'},
+        {'department': u'd18', 'name': u'Store Temporary Stockers'},
+        {'department': u'd19', 'name': u'Store Permanent Butchers'},
+        ]
 
 # getSLIManifest in SLI.java
 sli_manifest = {"dataSetSLIManifest": {
@@ -67,3 +83,86 @@ sli_manifest = {"dataSetSLIManifest": {
                                   "endOfLine": "\n"
                                   }
                     }}
+
+columns = [{'name': 'id', 'title': 'id', 'ldmType': 'ATTRIBUTE', 'folder': 'DealOrder'},
+            {'name': 'order_id', 'title': 'order_id', 'ldmType': 'ATTRIBUTE', 'folder': 'DealOrder'},
+            {'name': 'deal_id', 'title': 'deal_id', 'ldmType': 'ATTRIBUTE', 'folder': 'DealOrder'},
+            {'name': 'order__user_id', 'title': 'order__user_id', 'ldmType': 'ATTRIBUTE', 'folder': 'DealOrder'},
+            {'name': 'price', 'title': 'price', 'ldmType': 'FACT', 'dataType': 'DECIMAL', 'folder': 'DealOrder'},
+            {'name': 'order__creation_date', 'title': 'order__creation_date', 'ldmType': 'DATE', 'dataType': 'DATE', 'format': 'yyyy-MM-dd', 'schemaReference': 'Date', 'folder': 'DealOrder'},
+            {'name': 'order__paid_date', 'title': 'order__paid_date', 'ldmType': 'DATE', 'dataType': 'DATE', 'format': 'yyyy-MM-dd', 'schemaReference': 'Date', 'folder': 'DealOrder'},
+            {'name': 'order__pay_status', 'title': 'order__pay_status', 'ldmType': 'ATTRIBUTE', 'dataType': 'VARCHAR', 'folder': 'DealOrder'},
+            {'name': 'order__user__username', 'title': 'order__user__username', 'ldmType': 'ATTRIBUTE', 'dataType': 'VARCHAR', 'folder': 'DealOrder'},
+            ]
+
+#<!-- See documentation at http://developer.gooddata.com/gooddata-cl/xml-config.html -->
+schema = '''
+<schema>
+  <name>DealOrder</name>
+  <columns>
+    <column>
+      <name>id</name>
+      <title>id</title>
+      <ldmType>ATTRIBUTE</ldmType>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>price</name>
+      <title>price</title>
+      <ldmType>FACT</ldmType>
+      <dataType>DECIMAL</dataType>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>order_id</name>
+      <title>order_id</title>
+      <ldmType>ATTRIBUTE</ldmType>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>order__creation_date</name>
+      <title>order__creation_date</title>
+      <ldmType>DATE</ldmType>
+      <dataType>DATE</dataType>
+      <format>yyyy-MM-dd</format>
+      <schemaReference>Date</schemaReference>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>order__paid_date</name>
+      <title>order__paid_date</title>
+      <ldmType>DATE</ldmType>
+      <dataType>DATE</dataType>
+      <format>yyyy-MM-dd</format>
+      <schemaReference>Date</schemaReference>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>order__pay_status</name>
+      <title>order__pay_status</title>
+      <ldmType>ATTRIBUTE</ldmType>
+      <dataType>VARCHAR</dataType>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>deal_id</name>
+      <title>deal_id</title>
+      <ldmType>ATTRIBUTE</ldmType>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>order__user_id</name>
+      <title>order__user_id</title>
+      <ldmType>ATTRIBUTE</ldmType>
+      <folder>DealOrder</folder>
+    </column>
+    <column>
+      <name>order__user__username</name>
+      <title>order__user__username</title>
+      <ldmType>ATTRIBUTE</ldmType>
+      <dataType>VARCHAR</dataType>
+      <folder>DealOrder</folder>
+    </column>
+  </columns>
+</schema>
+'''.replace('  ', '').replace("\n", '')
