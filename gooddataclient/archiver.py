@@ -156,14 +156,17 @@ def get_column_populates(column, schema_name):
         return ["%s.date.mdyy" % to_identifier(column['schemaReference'])]
     raise AttributeError, 'Nothing to populate'
 
+def get_date_dt_column(column, schema_name):
+    name = '%s_dt' % column['name']
+    populates = 'dt.%s.%s' % (to_identifier(schema_name), to_identifier(column['name']))
+    return {'populates': [populates], 'columnName': name, 'mode': 'FULL'}
+
 def get_sli_manifest(column_list, schema_name, dataset_id):
     parts = []
     for column in column_list:
         # special additional column for date
         if column['ldmType'] == 'DATE':
-            # TODO: dynamic, working just for current test data
-            parts.append({'populates': ['dt.salary.payday'], 'columnName': 'payday_dt', 'mode': 'FULL'})
-            #parts.append({'populates': ['dt.user.date_joined'], 'columnName': 'date_joined_dt', 'mode': 'FULL'})
+            parts.append(get_date_dt_column(column, schema_name))
 
         col_part = {"columnName": column['name'],
                     "mode": "FULL",
