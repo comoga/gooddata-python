@@ -7,6 +7,8 @@ import datetime
 import hashlib
 from xml.dom.minidom import parseString
 
+from gooddataclient.text import to_identifier
+
 DLI_MANIFEST_FILENAME = 'upload_info.json'
 CSV_DATA_FILENAME = 'data.csv'
 DEFAULT_ARCHIVE_NAME = 'upload.zip'
@@ -45,7 +47,8 @@ def write_tmp_csv_file(csv_data, sli_manifest):
             #some incredible magic with additional date field
             if not key in line and key.endswith('_dt'):
                 h = hashlib.md5()
-                h.update(line[key[:-3]])
+                #h.update(line[key[:-3]])
+                h.update('123456')
                 line[key] = h.hexdigest()[:6]
             #formatting the date properly
             if isinstance(line[key], datetime.datetime):
@@ -135,26 +138,22 @@ def get_xml_schema(column_list, schema_name):
     return dom.toxml()
 
 
-def identifier(text):
-    # TODO: more complex in StringUtil.java:79 convertToIdentifier
-    return text.lower()
-
 def get_column_populates(column, schema_name):
-    schema_name_id = identifier(schema_name)
-    column_name_id = identifier(column['name'])
+    schema_name_id = to_identifier(schema_name)
+    column_name_id = to_identifier(column['name'])
     if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT'):
         return ["label.%s.%s" % (schema_name_id, column_name_id)]
     if column['ldmType'] in ('LABEL'):
         return ["label.%s.%s.%s" % (schema_name_id,
-                                    identifier(column['reference']),
+                                    to_identifier(column['reference']),
                                     column_name_id)]
     if column['ldmType'] in ('REFERENCE'):
-        return ["label.%s.%s" % (identifier(column['schemaReference']),
-                                 identifier(column['reference']))]
+        return ["label.%s.%s" % (to_identifier(column['schemaReference']),
+                                 to_identifier(column['reference']))]
     if column['ldmType'] in ('FACT'):
         return ["fact.%s.%s" % (schema_name_id, column_name_id)]
     if column['ldmType'] in ('DATE'):
-        return ["%s.date.mdyy" % identifier(column['schemaReference'])]
+        return ["%s.date.mdyy" % to_identifier(column['schemaReference'])]
     raise AttributeError, 'Nothing to populate'
 
 def get_sli_manifest(column_list, schema_name, dataset_id):
@@ -164,6 +163,7 @@ def get_sli_manifest(column_list, schema_name, dataset_id):
         if column['ldmType'] == 'DATE':
             # TODO: dynamic, working just for current test data
             parts.append({'populates': ['dt.salary.payday'], 'columnName': 'payday_dt', 'mode': 'FULL'})
+            #parts.append({'populates': ['dt.user.date_joined'], 'columnName': 'date_joined_dt', 'mode': 'FULL'})
 
         col_part = {"columnName": column['name'],
                     "mode": "FULL",

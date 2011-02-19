@@ -45,10 +45,9 @@ column_list = [{'name': 'salary', 'title': 'Salary', 'ldmType': 'CONNECTION_POIN
 
 dataset_id = 'dataset.salary'
 
-maql = """
-# payment_date.maql
-INCLUDE TEMPLATE "URN:GOODDATA:DATE" MODIFY (IDENTIFIER "payment", TITLE "Payment");
+date_dimension = {'name': 'Payment'}
 
+maql = """
 # THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
 # SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
 

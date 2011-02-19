@@ -5,6 +5,7 @@ import os
 from gooddataclient.connection import Connection
 from gooddataclient.archiver import write_tmp_file
 from gooddataclient.exceptions import DataSetNotFoundError
+from gooddataclient import maql
 
 from tests.credentials import password, username
 from tests import logger, examples
@@ -33,12 +34,19 @@ class TestProject(unittest.TestCase):
         for example in examples.examples:
             self.assertRaises(DataSetNotFoundError, self.project.get_dataset,
                               name=example.schema_name)
+            if hasattr(example, 'date_dimension'):
+                self.assertFalse(self.project.execute_maql(example.maql), example.maql)
+                date_maql = maql.get_date(name=example.date_dimension['name'])
+                self.assert_(self.project.execute_maql(date_maql), date_maql)
             self.assert_(self.project.execute_maql(example.maql), example.maql)
             self.assert_(self.project.get_dataset(name=example.schema_name))
 
     def test_transfer_data(self):
         for example in examples.examples:
-            self.project.execute_maql(example.maql)
+            if hasattr(example, 'date_dimension'):
+                date_maql = maql.get_date(name=example.date_dimension['name'])
+                self.assert_(self.project.execute_maql(date_maql), date_maql)
+            self.assert_(self.project.execute_maql(example.maql), example.maql)
             dir_name = self.project.transfer(example.data_csv,
                                              example.sli_manifest)
             self.assert_(len(dir_name) > 0)
