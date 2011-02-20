@@ -4,7 +4,7 @@ from zipfile import ZipFile
 from xml.dom.minidom import parseString
 
 from gooddataclient.archiver import create_archive, write_tmp_csv_file, \
-    get_xml_schema, get_sli_manifest, csv_to_list
+    get_xml_schema, csv_to_list
 
 from tests import logger, examples
 
@@ -44,12 +44,6 @@ class TestArchiver(unittest.TestCase):
                              '%s != %s (%s)' % (', '.join(n.nodeName for n in schema.childNodes[0].childNodes[1].childNodes),
                                                 ', '.join(n.nodeName for n in gen_schema.childNodes[0].childNodes[1].childNodes),
                                                 example))
-
-    def test_sli_manifest(self):
-        for example in examples.examples:
-            sli_manifest = get_sli_manifest(example.column_list, example.schema_name,
-                                            example.dataset_id)
-            self.assertEqual(example.sli_manifest, sli_manifest)
 
     def test_csv_to_list(self):
         for example in examples.examples:
