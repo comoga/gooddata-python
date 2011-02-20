@@ -1,0 +1,36 @@
+# THIS IS MAQL SCRIPT THAT GENERATES TIME DIMENSION LOGICAL MODEL.
+# SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
+
+# CREATE DATASET. DATASET GROUPS ALL FOLLOWING LOGICAL MODEL ELEMENTS TOGETHER.
+CREATE DATASET {dataset.time.%id%} VISUAL(TITLE "Time (%name%)");
+
+# CREATE THE FOLDERS THAT GROUP ATTRIBUTES AND FACTS
+CREATE FOLDER {dim.time.%id%} VISUAL(TITLE "Time dimension (%name%)") TYPE ATTRIBUTE;
+
+CREATE FOLDER {ffld.time.%id%} VISUAL(TITLE "Time dimension (%name%)") TYPE FACT;
+
+# CREATE ATTRIBUTES.
+
+CREATE ATTRIBUTE {attr.time.second.of.day.%id%} VISUAL(TITLE "Time (%name%)", FOLDER {dim.time.%id%}) AS KEYS {d_time_second_of_day_%id%.id} FULLSET WITH LABELS {label.time.%id%} VISUAL(TITLE "Time (hh:mm:ss)") AS {d_time_second_of_day_%id%.nm}, {label.time.twelve.%id%} VISUAL(TITLE "Time (HH:mm:ss)") AS {d_time_second_of_day_%id%.nm_12}, {label.time.second.of.day.%id%} VISUAL(TITLE "Second of Day") AS {d_time_second_of_day_%id%.nm_sec};
+ALTER ATTRIBUTE {attr.time.second.of.day.%id%} ORDER BY {label.time.%id%} ASC;
+ALTER DATASET {dataset.time.%id%} ADD {attr.time.second.of.day.%id%};
+
+CREATE ATTRIBUTE {attr.time.second.%id%} VISUAL(TITLE "Second (%name%)", FOLDER {dim.time.%id%}) AS KEYS {d_time_second_%id%.id} FULLSET, {d_time_second_of_day_%id%.second_id} WITH LABELS {label.time.second.%id%} VISUAL(TITLE "Second") AS {d_time_second_%id%.nm};
+ALTER DATASET {dataset.time.%id%} ADD {attr.time.second.%id%};
+
+CREATE ATTRIBUTE {attr.time.minute.of.day.%id%} VISUAL(TITLE "Minute of Day (%name%)", FOLDER {dim.time.%id%}) AS KEYS {d_time_minute_of_day_%id%.id} FULLSET, {d_time_second_of_day_%id%.minute_id} WITH LABELS {label.time.minute.of.day.%id%} VISUAL(TITLE "Minute of Day") AS {d_time_minute_of_day_%id%.nm};
+ALTER DATASET {dataset.time.%id%} ADD {attr.time.minute.of.day.%id%};
+
+CREATE ATTRIBUTE {attr.time.minute.%id%} VISUAL(TITLE "Minute (%name%)", FOLDER {dim.time.%id%}) AS KEYS {d_time_minute_%id%.id} FULLSET, {d_time_minute_of_day_%id%.minute_id} WITH LABELS {label.time.minute.%id%} VISUAL(TITLE "Minute") AS {d_time_minute_%id%.nm};
+ALTER DATASET {dataset.time.%id%} ADD {attr.time.minute.%id%};
+
+CREATE ATTRIBUTE {attr.time.hour.of.day.%id%} VISUAL(TITLE "Hour (%name%)", FOLDER {dim.time.%id%}) AS KEYS {d_time_hour_of_day_%id%.id} FULLSET, {d_time_minute_of_day_%id%.hour_id} WITH LABELS {label.time.hour.of.day.%id%} VISUAL(TITLE "Hour (0-23)") AS {d_time_hour_of_day_%id%.nm}, {label.time.hour.of.day.twelve.%id%} VISUAL(TITLE "Hour (1-12)") AS {d_time_hour_of_day_%id%.nm_12};
+ALTER ATTRIBUTE {attr.time.hour.of.day.%id%} ORDER BY {label.time.hour.of.day.%id%} ASC;
+ALTER DATASET {dataset.time.%id%} ADD {attr.time.hour.of.day.%id%};
+
+CREATE ATTRIBUTE {attr.time.ampm.%id%} VISUAL(TITLE "AM/PM (%name%)", FOLDER {dim.time.%id%}) AS KEYS {d_time_ampm_%id%.id} FULLSET, {d_time_hour_of_day_%id%.ampm_id} WITH LABELS {label.time.ampm.%id%} VISUAL(TITLE "AM/PM") AS {d_time_ampm_%id%.nm};
+ALTER DATASET {dataset.time.%id%} ADD {attr.time.ampm.%id%};
+
+
+# SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
+SYNCHRONIZE {dataset.time.%id%};
