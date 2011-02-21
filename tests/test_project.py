@@ -36,19 +36,32 @@ class TestProject(unittest.TestCase):
                               name=example.schema_name)
             if hasattr(example, 'date_dimension'):
                 self.assertFalse(self.project.execute_maql(example.maql), example.maql)
-                date_maql = maql.get_date(name=example.date_dimension['name'])
-                self.assert_(self.project.execute_maql(date_maql), date_maql)
+                self.project.setup_date_dimension(name=example.date_dimension['name'],
+                                                  include_time=('include_time' in example.date_dimension))
             self.assert_(self.project.execute_maql(example.maql), example.maql)
             self.assert_(self.project.get_dataset(name=example.schema_name))
+
+    def test_transfer_date_dimension(self):
+        for example in examples.examples:
+            if not hasattr(example, 'date_dimension'):
+                continue
+            date_maql = maql.get_date(name=example.date_dimension['name'],
+                                      include_time=('include_time' in example.date_dimension))
+            self.assert_(self.project.execute_maql(date_maql), date_maql)
+            if 'include_time' in example.date_dimension:
+                dir_name = self.project.transfer_date_dimension(example.date_dimension['name'])
+                self.assert_(len(dir_name) > 0)
+                self.assert_(self.connection.request('/uploads/%s' % dir_name,
+                                                     host=Connection.WEBDAV_HOST))
+                self.connection.delete_webdav_dir(dir_name)
 
     def test_transfer_data(self):
         for example in examples.examples:
             if hasattr(example, 'date_dimension'):
-                date_maql = maql.get_date(name=example.date_dimension['name'])
-                self.assert_(self.project.execute_maql(date_maql), date_maql)
+                self.project.setup_date_dimension(name=example.date_dimension['name'],
+                                                  include_time=('include_time' in example.date_dimension))
             self.assert_(self.project.execute_maql(example.maql), example.maql)
-            dir_name = self.project.transfer(example.data_csv,
-                                             example.sli_manifest)
+            dir_name = self.project.transfer(example.data_csv, example.sli_manifest)
             self.assert_(len(dir_name) > 0)
             self.assert_(self.connection.request('/uploads/%s' % dir_name,
                                                  host=Connection.WEBDAV_HOST))
@@ -63,8 +76,7 @@ class TestProject(unittest.TestCase):
             dataset = self.project.get_dataset(name=example.schema_name)
             self.assert_(dataset['dataUploads'])
             self.assertEquals('OK', dataset['lastUpload']['dataUploadShort']['status'])
-            self.connection.request('/uploads/%s/' % dir_name, host=Connection.WEBDAV_HOST,
-                                    method='DELETE')
+            self.connection.delete_webdav_dir(dir_name)
 
 
 

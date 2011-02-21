@@ -90,6 +90,7 @@ class Connection(object):
         except urllib2.URLError, err:
             #webdav "errors"
             if hasattr(err, 'code') and err.code in (201, 204, 207):
+                logger.debug(err)
                 return True
             else:
                 logger.error(err)
@@ -137,4 +138,8 @@ class Connection(object):
                 project.delete()
         except ProjectNotFoundError:
             pass
+
+    def delete_webdav_dir(self, dir_name):
+        self.request('/uploads/%s/' % dir_name, host=Connection.WEBDAV_HOST,
+                     method='DELETE')
 

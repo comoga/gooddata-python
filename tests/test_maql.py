@@ -12,8 +12,8 @@ class TestMaql(unittest.TestCase):
         self.assertEquals('INCLUDE TEMPLATE "URN:GOODDATA:DATE"', maql.get_date())
         self.assertEquals('INCLUDE TEMPLATE "URN:GOODDATA:DATE" MODIFY (IDENTIFIER "test", TITLE "Test");\n\n',
                           maql.get_date('Test'))
-        self.assertEquals(forex.time_dimension, maql.get_date('Forex', include_time=True))
-        self.assertEquals(forex.time_dimension.replace('forex', 'xerof').replace('Forex', 'Xerof'), 
+        self.assertEquals(forex.date_dimension_maql, maql.get_date('Forex', include_time=True))
+        self.assertEquals(forex.date_dimension_maql.replace('forex', 'xerof').replace('Forex', 'Xerof'), 
                           maql.get_date('Xerof', include_time=True))
         
 

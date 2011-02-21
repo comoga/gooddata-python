@@ -1,0 +1,77 @@
+{
+   "dataSetSLIManifest" : {
+      "parts" : [
+         {
+            "columnName" : "minute",
+            "populates" : [
+               "label.time.minute.%id%"
+            ],
+            "mode" : "FULL",
+            "referenceKey" : 1
+         },
+         {
+            "columnName" : "time",
+            "populates" : [
+               "label.time.%id%"
+            ],
+            "mode" : "FULL"
+         },
+         {
+            "columnName" : "time12",
+            "populates" : [
+               "label.time.twelve.%id%"
+            ],
+            "mode" : "FULL"
+         },
+         {
+            "columnName" : "second_of_day",
+            "populates" : [
+               "label.time.second.of.day.%id%"
+            ],
+            "mode" : "FULL",
+            "referenceKey" : 1
+         },
+         {
+            "columnName" : "hour",
+            "populates" : [
+               "label.time.hour.of.day.%id%"
+            ],
+            "mode" : "FULL",
+            "referenceKey" : 1
+         },
+         {
+            "columnName" : "hour12",
+            "populates" : [
+               "label.time.hour.of.day.twelve.%id%"
+            ],
+            "mode" : "FULL"
+         },
+         {
+            "columnName" : "minute_of_day",
+            "populates" : [
+               "label.time.minute.of.day.%id%"
+            ],
+            "mode" : "FULL",
+            "referenceKey" : 1
+         },
+         {
+            "columnName" : "am_pm",
+            "populates" : [
+               "label.time.ampm.%id%"
+            ],
+            "mode" : "FULL",
+            "referenceKey" : 1
+         },
+         {
+            "columnName" : "second",
+            "populates" : [
+               "label.time.second.%id%"
+            ],
+            "mode" : "FULL",
+            "referenceKey" : 1
+         }
+      ],
+      "file" : "data.csv",
+      "dataSet" : "dataset.time.%id%"
+   }
+}

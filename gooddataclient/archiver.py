@@ -86,7 +86,9 @@ def create_archive(data, sli_manifest):
         data_path = write_tmp_csv_file(data, sli_manifest)
     else:
         data_path = write_tmp_file(data)
-    sli_manifest_path = write_tmp_file(json.dumps(sli_manifest))
+    if isinstance(sli_manifest, dict):
+        sli_manifest = json.dumps(sli_manifest)
+    sli_manifest_path = write_tmp_file(sli_manifest)
     filename = write_tmp_zipfile((
                    (data_path, CSV_DATA_FILENAME),
                    (sli_manifest_path, DLI_MANIFEST_FILENAME),
