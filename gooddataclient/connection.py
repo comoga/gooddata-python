@@ -1,3 +1,4 @@
+import os
 import urllib2
 import cookielib
 import simplejson as json
@@ -5,6 +6,7 @@ import logging
 
 from gooddataclient.project import Project
 from gooddataclient.exceptions import AuthenticationError, ProjectNotFoundError
+from gooddataclient.archiver import create_archive, DEFAULT_ARCHIVE_NAME
 
 logger = logging.getLogger("gooddataclient")
 
@@ -27,6 +29,7 @@ class Connection(object):
 
     DEFAULT_HOST = 'https://secure.gooddata.com'
     WEBDAV_HOST = 'https://secure-di.gooddata.com'
+    WEBDAV_URI = '/uploads/'
 
     LOGIN_URI = '/gdc/account/login'
     TOKEN_URI = '/gdc/account/token'
@@ -138,6 +141,30 @@ class Connection(object):
                 project.delete()
         except ProjectNotFoundError:
             pass
+
+    def upload_to_webdav(self, data, sli_manifest):
+        '''Create zip file with data in csv format and manifest file, then create
+        directory in webdav and upload the zip file there. 
+        
+        @param data: csv data to upload
+        @param sli_manifest: dictionary with the columns definitions
+        @param wait_for_finish: check periodically for the integration result
+        
+        return the name of the temporary file, hence the name of the directory
+        created in webdav uploads folder
+        '''
+        filename = create_archive(data, sli_manifest)
+        dir_name = os.path.basename(filename)
+        self.request(''.join((self.WEBDAV_URI, dir_name)),
+                     host=self.WEBDAV_HOST, method='MKCOL')
+        f = open(filename, 'rb')
+        # can it be streamed?
+        self.request(''.join((self.WEBDAV_URI, dir_name, '/', DEFAULT_ARCHIVE_NAME)),
+                     host=self.WEBDAV_HOST, data=f.read(), 
+                     headers={'Content-Type': 'application/zip'}, method='PUT')
+        f.close()
+        os.remove(filename)
+        return dir_name
 
     def delete_webdav_dir(self, dir_name):
         self.request('/uploads/%s/' % dir_name, host=Connection.WEBDAV_HOST,

@@ -3,6 +3,7 @@ from zipfile import ZipFile
 import os
 
 from gooddataclient.connection import Connection
+from gooddataclient.dataset import Dataset
 from gooddataclient.archiver import write_tmp_file
 from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import maql
@@ -29,15 +30,16 @@ class TestProject(unittest.TestCase):
 
     def test_create_structure(self):
         self.assertFalse(self.project.execute_maql('CREATE DATASET {dat'))
+        dataset = Dataset(self.project)
         for example in examples.examples:
-            self.assertRaises(DataSetNotFoundError, self.project.get_dataset,
+            self.assertRaises(DataSetNotFoundError, dataset.get_metadata,
                               name=example.schema_name)
             if hasattr(example, 'date_dimension'):
                 self.assertFalse(self.project.execute_maql(example.maql), example.maql)
                 self.project.create_date_dimension(name=example.date_dimension['name'],
                                                   include_time=('include_time' in example.date_dimension))
             self.assert_(self.project.execute_maql(example.maql), example.maql)
-            self.assert_(self.project.get_dataset(name=example.schema_name))
+            self.assert_(dataset.get_metadata(name=example.schema_name))
 
     def test_create_date_dimension(self):
         for example in examples.examples:
@@ -57,7 +59,7 @@ class TestProject(unittest.TestCase):
                                                   include_time=('include_time' in example.date_dimension))
 
             self.assert_(self.project.execute_maql(example.maql), example.maql)
-            dir_name = self.project.upload_to_webdav(example.data_csv, example.sli_manifest)
+            dir_name = self.connection.upload_to_webdav(example.data_csv, example.sli_manifest)
             self.assert_(len(dir_name) > 0)
             self.assert_(self.connection.request('/uploads/%s' % dir_name,
                                                  host=Connection.WEBDAV_HOST))
@@ -71,9 +73,10 @@ class TestProject(unittest.TestCase):
             os.remove(tmp_file)
 
             self.project.integrate_uploaded_data(dir_name)
-            dataset = self.project.get_dataset(name=example.schema_name)
-            self.assert_(dataset['dataUploads'])
-            self.assertEquals('OK', dataset['lastUpload']['dataUploadShort']['status'])
+            dataset = Dataset(self.project)
+            dataset_metadata = dataset.get_metadata(name=example.schema_name)
+            self.assert_(dataset_metadata['dataUploads'])
+            self.assertEquals('OK', dataset_metadata['lastUpload']['dataUploadShort']['status'])
             self.connection.delete_webdav_dir(dir_name)
 
 
