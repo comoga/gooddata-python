@@ -59,12 +59,10 @@ class TestProject(unittest.TestCase):
                                                   include_time=('include_time' in example.date_dimension))
 
             self.assert_(self.project.execute_maql(example.maql), example.maql)
-            dir_name = self.connection.upload_to_webdav(example.data_csv, example.sli_manifest)
+            dir_name = self.connection.webdav.upload(example.data_csv, example.sli_manifest)
             self.assert_(len(dir_name) > 0)
-            self.assert_(self.connection.request('/uploads/%s' % dir_name,
-                                                 host=Connection.WEBDAV_HOST))
-            uploaded_file = self.connection.request('/uploads/%s/upload.zip' % dir_name,
-                                                    host=Connection.WEBDAV_HOST)
+            self.assert_(self.connection.webdav.request('/uploads/%s' % dir_name))
+            uploaded_file = self.connection.webdav.request('/uploads/%s/upload.zip' % dir_name)
             tmp_file = write_tmp_file(uploaded_file.read())
             zip_file = ZipFile(tmp_file, "r")
             self.assertEquals(None, zip_file.testzip())
@@ -77,7 +75,7 @@ class TestProject(unittest.TestCase):
             dataset_metadata = dataset.get_metadata(name=example.schema_name)
             self.assert_(dataset_metadata['dataUploads'])
             self.assertEquals('OK', dataset_metadata['lastUpload']['dataUploadShort']['status'])
-            self.connection.delete_webdav_dir(dir_name)
+            self.connection.webdav.delete(dir_name)
 
 
 

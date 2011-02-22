@@ -63,7 +63,7 @@ class Project(object):
         sli_manifest = open(os.path.join(os.path.dirname(__file__), 'resources',
                                          'connector', 'upload_info.json')).read()
         sli_manifest = sli_manifest.replace('%id%', text.to_identifier(name)).replace('%name%', name)
-        dir_name = self.connection.upload_to_webdav(data, sli_manifest)
+        dir_name = self.connection.webdav.upload(data, sli_manifest)
         self.integrate_uploaded_data(dir_name, wait_for_finish=True)
-        self.connection.delete_webdav_dir(dir_name)
+        self.connection.webdav.delete(dir_name)
 

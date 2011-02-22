@@ -25,11 +25,10 @@ class RequestWithMethod(urllib2.Request):
             return 'GET'
 
 
+
 class Connection(object):
 
-    DEFAULT_HOST = 'https://secure.gooddata.com'
-    WEBDAV_HOST = 'https://secure-di.gooddata.com'
-    WEBDAV_URI = '/uploads/'
+    HOST = 'https://secure.gooddata.com'
 
     LOGIN_URI = '/gdc/account/login'
     TOKEN_URI = '/gdc/account/token'
@@ -42,14 +41,9 @@ class Connection(object):
     }
 
     def __init__(self, username, password, debug=0):
-        webdav_handler = self.get_webdav_handler(username, password)
-        self.setup_urllib2([webdav_handler], debug)
+        self.webdav = Webdav()
+        self.setup_urllib2([self.webdav.get_handler(username, password)], debug)
         self.login(username, password)
-
-    def get_webdav_handler(self, username, password):
-        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passman.add_password(None, self.WEBDAV_HOST, username, password)
-        return urllib2.HTTPBasicAuthHandler(passman)
 
     def setup_urllib2(self, additional_handlers=[], debug=0):
         handlers = [urllib2.HTTPCookieProcessor(cookielib.CookieJar()),
@@ -74,34 +68,27 @@ class Connection(object):
         except KeyError:
             raise AuthenticationError('No userLogin information in response to login.')
 
-
-    def get_metadata(self):
-        return self.request(self.MD_URI)
-
-    def request(self, uri, data=None, host=DEFAULT_HOST, headers=JSON_HEADERS, method=None):
+    def request(self, uri, data=None, headers=JSON_HEADERS, method=None):
         logger.debug(uri)
         #data to json
         if data and isinstance(data, dict):
             data = json.dumps(data)
         #uri with host
-        full_uri = ''.join((host, uri))
+        full_uri = ''.join((self.HOST, uri))
         #updating headers
         headers['Content-Length'] = str(len(data)) if data else 0
         request = RequestWithMethod(method, full_uri, data, headers)
         try:
             response = urllib2.urlopen(request)
         except urllib2.URLError, err:
-            #webdav "errors"
-            if hasattr(err, 'code') and err.code in (201, 204, 207):
-                logger.debug(err)
-                return True
-            else:
-                logger.error(err)
-                raise
+            logger.error(err)
+            raise
         if response.info().gettype() == 'application/json':
             return json.loads(response.read())
         return response
 
+    def get_metadata(self):
+        return self.request(self.MD_URI)
 
     def get_project(self, id=None, name=None):
         id = id or self.get_project_id_by_name(name)
@@ -142,7 +129,32 @@ class Connection(object):
         except ProjectNotFoundError:
             pass
 
-    def upload_to_webdav(self, data, sli_manifest):
+
+class Webdav(Connection):
+
+    HOST = 'https://secure-di.gooddata.com'
+    UPLOADS_URI = '/uploads/%s/'
+
+    def __init__(self):
+        pass
+
+    def get_handler(self, username, password):
+        passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
+        passman.add_password(None, self.HOST, username, password)
+        return urllib2.HTTPBasicAuthHandler(passman)
+
+    def request(self, *args, **kwargs):
+        try:
+            return super(Webdav, self).request(*args, **kwargs)
+        except urllib2.URLError, err:
+            if hasattr(err, 'code') and err.code in (201, 204, 207):
+                return
+            raise
+
+    def delete(self, dir_name):
+        self.request(self.UPLOADS_URI % dir_name, method='DELETE')
+
+    def upload(self, data, sli_manifest):
         '''Create zip file with data in csv format and manifest file, then create
         directory in webdav and upload the zip file there. 
         
@@ -155,18 +167,12 @@ class Connection(object):
         '''
         filename = create_archive(data, sli_manifest)
         dir_name = os.path.basename(filename)
-        self.request(''.join((self.WEBDAV_URI, dir_name)),
-                     host=self.WEBDAV_HOST, method='MKCOL')
+        self.request(self.UPLOADS_URI % dir_name, method='MKCOL')
         f = open(filename, 'rb')
         # can it be streamed?
-        self.request(''.join((self.WEBDAV_URI, dir_name, '/', DEFAULT_ARCHIVE_NAME)),
-                     host=self.WEBDAV_HOST, data=f.read(), 
-                     headers={'Content-Type': 'application/zip'}, method='PUT')
+        self.request(''.join((self.UPLOADS_URI % dir_name, DEFAULT_ARCHIVE_NAME)),
+                     data=f.read(), headers={'Content-Type': 'application/zip'},
+                     method='PUT')
         f.close()
         os.remove(filename)
         return dir_name
-
-    def delete_webdav_dir(self, dir_name):
-        self.request('/uploads/%s/' % dir_name, host=Connection.WEBDAV_HOST,
-                     method='DELETE')
-
