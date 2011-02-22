@@ -1,5 +1,10 @@
-from gooddataclient.exceptions import DataSetNotFoundError
+import os
+import logging
 
+from gooddataclient.exceptions import DataSetNotFoundError
+from gooddataclient import text
+
+logger = logging.getLogger("gooddataclient")
 
 class Dataset(object):
 
@@ -27,6 +32,54 @@ class Dataset(object):
         # TODO: check if not already created, do not exec maql, but always upload
         self.project.execute_maql(maql)
 
-        dir_name = self.connection.upload_to_webdav(data, sli_manifest)
-        dir_name = self.project.integrate_uploaded_data(dir_name)
-        self.connection.delete_webdav_dir(dir_name)
+        dir_name = self.connection.webdav.upload(data, sli_manifest)
+        self.project.integrate_uploaded_data(dir_name)
+        self.connection.webdav.delete(dir_name)
+
+
+class DateDimension(object):
+
+    DATE_MAQL = 'INCLUDE TEMPLATE "URN:GOODDATA:DATE"'
+    DATE_MAQL_ID = 'INCLUDE TEMPLATE "URN:GOODDATA:DATE" MODIFY (IDENTIFIER "%s", TITLE "%s");\n\n'
+
+    def __init__(self, project):
+        self.project = project
+        self.connection = project.connection
+
+    def get_maql(self, name=None, include_time=False):
+        '''Get MAQL for date dimension.
+        
+        See generateMaqlCreate in DateDimensionConnect.java
+        '''
+        if not name:
+            return self.DATE_MAQL
+
+        maql = self.DATE_MAQL_ID % (text.to_identifier(name), name)
+
+        if include_time:
+            file_path = os.path.join(os.path.dirname(__file__), 'resources',
+                                     'connector', 'TimeDimension.maql')
+            time_dimension = open(file_path).read()\
+                                .replace('%id%', text.to_identifier(name))\
+                                .replace('%name%', name)
+            maql = ''.join((maql, time_dimension))
+
+        return maql
+
+    def create(self, name=None, include_time=False):
+        # TODO: check if not already created, if yes, do nothing
+        self.project.execute_maql(self.get_maql(name, include_time))
+        if include_time:
+            self.upload_time(name)
+
+    def upload_time(self, name):
+        data = open(os.path.join(os.path.dirname(__file__), 'resources',
+                                  'connector', 'data.csv')).read()
+        sli_manifest = open(os.path.join(os.path.dirname(__file__), 'resources',
+                                         'connector', 'upload_info.json')).read()\
+                         .replace('%id%', text.to_identifier(name))\
+                         .replace('%name%', name)
+        dir_name = self.connection.webdav.upload(data, sli_manifest)
+        self.project.integrate_uploaded_data(dir_name, wait_for_finish=True)
+        self.connection.webdav.delete(dir_name)
+

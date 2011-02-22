@@ -4,7 +4,6 @@ import urllib2
 import logging
 
 from gooddataclient.exceptions import ProjectNotOpenedError, UploadFailed
-from gooddataclient import text, maql
 
 logger = logging.getLogger("gooddataclient")
 
@@ -52,18 +51,4 @@ class Project(object):
                     raise UploadFailed(status)
                 time.sleep(0.5)
 
-    def create_date_dimension(self, name=None, include_time=False):
-        # TODO: check if not already created, if yes, do nothing
-        date_maql = maql.get_date(name, include_time)
-        self.execute_maql(date_maql)
-        if not include_time:
-            return
-        data = open(os.path.join(os.path.dirname(__file__), 'resources',
-                                  'connector', 'data.csv')).read()
-        sli_manifest = open(os.path.join(os.path.dirname(__file__), 'resources',
-                                         'connector', 'upload_info.json')).read()
-        sli_manifest = sli_manifest.replace('%id%', text.to_identifier(name)).replace('%name%', name)
-        dir_name = self.connection.webdav.upload(data, sli_manifest)
-        self.integrate_uploaded_data(dir_name, wait_for_finish=True)
-        self.connection.webdav.delete(dir_name)
 

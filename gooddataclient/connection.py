@@ -151,9 +151,6 @@ class Webdav(Connection):
                 return
             raise
 
-    def delete(self, dir_name):
-        self.request(self.UPLOADS_URI % dir_name, method='DELETE')
-
     def upload(self, data, sli_manifest):
         '''Create zip file with data in csv format and manifest file, then create
         directory in webdav and upload the zip file there. 
@@ -176,3 +173,7 @@ class Webdav(Connection):
         f.close()
         os.remove(filename)
         return dir_name
+
+    def delete(self, dir_name):
+        self.request(self.UPLOADS_URI % dir_name, method='DELETE')
+
