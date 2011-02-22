@@ -41,15 +41,16 @@ class Connection(object):
     }
 
     def __init__(self, username, password, debug=0):
-        self.webdav = Webdav()
-        self.setup_urllib2([self.webdav.get_handler(username, password)], debug)
+        self.webdav = Webdav(username, password)
+        self.setup_urllib2(debug)
         self.login(username, password)
 
-    def setup_urllib2(self, additional_handlers=[], debug=0):
+    def setup_urllib2(self, debug):
         handlers = [urllib2.HTTPCookieProcessor(cookielib.CookieJar()),
                     urllib2.HTTPHandler(debuglevel=debug),
                     urllib2.HTTPSHandler(debuglevel=debug),
-                    ] + additional_handlers
+                    ]
+        handlers.append(self.webdav.get_handler())
         opener = urllib2.build_opener(*handlers)
         urllib2.install_opener(opener)
 
@@ -135,12 +136,13 @@ class Webdav(Connection):
     HOST = 'https://secure-di.gooddata.com'
     UPLOADS_URI = '/uploads/%s/'
 
-    def __init__(self):
-        pass
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
 
-    def get_handler(self, username, password):
+    def get_handler(self):
         passman = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        passman.add_password(None, self.HOST, username, password)
+        passman.add_password(None, self.HOST, self.username, self.password)
         return urllib2.HTTPBasicAuthHandler(passman)
 
     def request(self, *args, **kwargs):
