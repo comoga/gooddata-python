@@ -2,6 +2,7 @@ import os
 import unittest
 from zipfile import ZipFile
 
+from gooddataclient.project import Project
 from gooddataclient.archiver import create_archive, write_tmp_csv_file, \
     csv_to_list
 
@@ -12,7 +13,9 @@ class TestArchiver(unittest.TestCase):
 
     def test_csv(self):
         for example in examples.examples:
-            csv_filename = write_tmp_csv_file(example.data_list, example.sli_manifest)
+            dataset = example.ExampleDataset(Project(None))
+            csv_filename = write_tmp_csv_file(dataset.data(),
+                                              example.sli_manifest)
             f = open(csv_filename, 'r')
             content = f.read()
             f.close()
@@ -32,7 +35,7 @@ class TestArchiver(unittest.TestCase):
     def test_csv_to_list(self):
         for example in examples.examples:
             data_list = csv_to_list(example.data_csv)
-            self.assertEqual(example.data_list, data_list)
+            self.assertEqual(example.ExampleDataset(Project(None)).data(), data_list)
 
 
 if __name__ == '__main__':

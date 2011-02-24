@@ -34,16 +34,16 @@ class TestProject(unittest.TestCase):
     def test_create_structure(self):
         project = Project(self.connection).create(TEST_PROJECT_NAME)
         self.assertFalse(project.execute_maql('CREATE DATASET {dat'))
-        dataset = Dataset(project)
         for example in examples.examples:
+            dataset = example.ExampleDataset(project)
             self.assertRaises(DataSetNotFoundError, dataset.get_metadata,
-                              name=example.schema_name)
-            if hasattr(example, 'date_dimension'):
-                self.assertFalse(project.execute_maql(example.maql), example.maql)
-                DateDimension(project).create(name=example.date_dimension['name'],
-                                                   include_time=('include_time' in example.date_dimension))
-            self.assert_(project.execute_maql(example.maql), example.maql)
-            self.assert_(dataset.get_metadata(name=example.schema_name))
+                              name=dataset.schema_name)
+            if dataset.date_dimension:
+                self.assertFalse(project.execute_maql(dataset.maql), dataset.maql)
+                DateDimension(project).create(name=dataset.date_dimension['name'],
+                                                   include_time=('include_time' in dataset.date_dimension))
+            self.assert_(project.execute_maql(dataset.maql), dataset.maql)
+            self.assert_(dataset.get_metadata(name=dataset.schema_name))
         project.delete()
 
 if __name__ == '__main__':

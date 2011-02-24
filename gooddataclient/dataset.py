@@ -3,12 +3,20 @@ import logging
 
 from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import text
+from gooddataclient.manifest import get_sli_manifest
 
 logger = logging.getLogger("gooddataclient")
 
 class Dataset(object):
 
     DATASETS_URI = '/gdc/md/%s/data/sets'
+
+    # Defined in child class
+    date_dimension = None
+    maql = None
+    schema_name = None
+    dataset_id = None
+    column_list = None
 
     def __init__(self, project):
         self.project = project
@@ -28,11 +36,16 @@ class Dataset(object):
         dataset = self.get_metadata(name)
         return self.connection.request(dataset['meta']['uri'], method='DELETE')
 
-    def upload(self, maql, data, sli_manifest):
-        # TODO: check if not already created, do not exec maql, but always upload
-        self.project.execute_maql(maql)
+    def data(self):
+        raise NotImplementedError
 
-        dir_name = self.connection.webdav.upload(data, sli_manifest)
+    def upload(self):
+        # TODO: check if not already created, do not exec maql, but always upload
+        self.project.execute_maql(self.maql)
+
+        sli_manifest = get_sli_manifest(self.column_list, self.schema_name, 
+                                        self.dataset_id)
+        dir_name = self.connection.webdav.upload(self.data(), sli_manifest)
         self.project.integrate_uploaded_data(dir_name)
         self.connection.webdav.delete(dir_name)
 

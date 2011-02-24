@@ -1,3 +1,81 @@
+from gooddataclient.dataset import Dataset
+
+class ExampleDataset(Dataset):
+
+    schema_name = 'forex'
+    dataset_id = 'dataset.forex'
+    column_list = [{'name': 'id', 'title': 'Id', 'ldmType': 'CONNECTION_POINT', 'dataType': 'IDENTITY'},
+                   {'name': 'time', 'title': 'TIME', 'ldmType': 'DATE', 'datetime': 'true', 'folder': 'Forex', 'schemaReference': 'Forex', 'format': 'dd-MM-yyyy HH:mm:ss'},
+                   {'name': 'volume', 'title': 'VOLUME', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
+                   {'name': 'open', 'title': 'OPEN', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
+                   {'name': 'close', 'title': 'CLOSE', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
+                   {'name': 'min', 'title': 'MIN', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
+                   {'name': 'max', 'title': 'MAX', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
+                   ]
+    date_dimension = {'name': 'Forex', 'include_time': True}
+    maql = """
+# THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
+# SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
+
+# CREATE DATASET. DATASET GROUPS ALL FOLLOWING LOGICAL MODEL ELEMENTS TOGETHER.
+CREATE DATASET {dataset.forex} VISUAL(TITLE "forex");
+
+# CREATE THE FOLDERS THAT GROUP ATTRIBUTES AND FACTS
+CREATE FOLDER {dim.forex} VISUAL(TITLE "Forex") TYPE ATTRIBUTE;
+
+CREATE FOLDER {ffld.forex} VISUAL(TITLE "Forex") TYPE FACT;
+
+# CREATE ATTRIBUTES.
+# ATTRIBUTES ARE CATEGORIES THAT ARE USED FOR SLICING AND DICING THE NUMBERS (FACTS)
+CREATE ATTRIBUTE {attr.forex.id} VISUAL(TITLE "Id") AS KEYS {f_forex.id} FULLSET;
+ALTER DATASET {dataset.forex} ADD {attr.forex.id};
+ALTER DATATYPE {f_forex.nm_id} VARCHAR(32);
+# CREATE FACTS
+# FACTS ARE NUMBERS THAT ARE AGGREGATED BY ATTRIBUTES.
+CREATE FACT {fact.forex.volume} VISUAL(TITLE "VOLUME", FOLDER {ffld.forex}) AS {f_forex.f_volume};
+ALTER DATASET {dataset.forex} ADD {fact.forex.volume};
+ALTER DATATYPE {f_forex.f_volume} DECIMAL(8,4);
+CREATE FACT {fact.forex.open} VISUAL(TITLE "OPEN", FOLDER {ffld.forex}) AS {f_forex.f_open};
+ALTER DATASET {dataset.forex} ADD {fact.forex.open};
+ALTER DATATYPE {f_forex.f_open} DECIMAL(8,4);
+CREATE FACT {fact.forex.close} VISUAL(TITLE "CLOSE", FOLDER {ffld.forex}) AS {f_forex.f_close};
+ALTER DATASET {dataset.forex} ADD {fact.forex.close};
+ALTER DATATYPE {f_forex.f_close} DECIMAL(8,4);
+CREATE FACT {fact.forex.min} VISUAL(TITLE "MIN", FOLDER {ffld.forex}) AS {f_forex.f_min};
+ALTER DATASET {dataset.forex} ADD {fact.forex.min};
+ALTER DATATYPE {f_forex.f_min} DECIMAL(8,4);
+CREATE FACT {fact.forex.max} VISUAL(TITLE "MAX", FOLDER {ffld.forex}) AS {f_forex.f_max};
+ALTER DATASET {dataset.forex} ADD {fact.forex.max};
+ALTER DATATYPE {f_forex.f_max} DECIMAL(8,4);
+# CREATE DATE FACTS
+# DATES ARE REPRESENTED AS FACTS
+# DATES ARE ALSO CONNECTED TO THE DATE DIMENSIONS
+CREATE FACT {dt.forex.time} VISUAL(TITLE "TIME (Date)", FOLDER {ffld.forex}) AS {f_forex.dt_time};
+ALTER DATASET {dataset.forex} ADD {dt.forex.time};
+
+CREATE FACT {tm.dt.forex.time} VISUAL(TITLE "TIME (Time)", FOLDER {ffld.forex}) AS {f_forex.tm_time};
+ALTER DATASET {dataset.forex} ADD {tm.dt.forex.time};
+
+# CONNECT THE DATE TO THE DATE DIMENSION
+ALTER ATTRIBUTE {forex.date} ADD KEYS {f_forex.dt_time_id};
+
+# CONNECT THE TIME TO THE TIME DIMENSION
+ALTER ATTRIBUTE {attr.time.second.of.day.forex} ADD KEYS {f_forex.tm_time_id};
+
+# CREATE REFERENCES
+# REFERENCES CONNECT THE DATASET TO OTHER DATASETS
+ALTER ATTRIBUTE {attr.forex.id} ADD LABELS {label.forex.id} VISUAL(TITLE "Id") AS {f_forex.nm_id}; 
+# SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
+SYNCHRONIZE {dataset.forex};
+"""
+
+    def data(self):
+        return [{'min': '1.0019', 'max': '1.0026', 'volume': '140', 'time_dt': '40485', 'time': '04-11-2010 00:48:01', 'time_tm': '2881', 'close': '1.0022', 'tm_time_id': '2881', 'open': '1.0023', 'id': 'a4aea808c4d9fc2a11771e7087177546'},
+                {'min': '1.0017', 'max': '1.0024', 'volume': '182', 'time_dt': '40485', 'time': '04-11-2010 00:49:01', 'time_tm': '2941', 'close': '1.0022', 'tm_time_id': '2941', 'open': '1.0024', 'id': 'f610d2a7e98bf4a2d1d40f3ba391effb'},
+                {'min': '1.0018', 'max': '1.0025', 'volume': '198', 'time_dt': '40485', 'time': '04-11-2010 00:50:01', 'time_tm': '3001', 'close': '1.0023', 'tm_time_id': '3001', 'open': '1.0022', 'id': 'a0c81959893ee94b19b8183a638e0ce6'}
+                ]
+
+
 
 schema_xml = '''
 <schema>
@@ -57,21 +135,6 @@ schema_xml = '''
 </schema>
 '''
 
-schema_name = 'forex'
-
-column_list = [{'name': 'id', 'title': 'Id', 'ldmType': 'CONNECTION_POINT', 'dataType': 'IDENTITY'},
-               {'name': 'time', 'title': 'TIME', 'ldmType': 'DATE', 'datetime': 'true', 'folder': 'Forex', 'schemaReference': 'Forex', 'format': 'dd-MM-yyyy HH:mm:ss'},
-               {'name': 'volume', 'title': 'VOLUME', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-               {'name': 'open', 'title': 'OPEN', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-               {'name': 'close', 'title': 'CLOSE', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-               {'name': 'min', 'title': 'MIN', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-               {'name': 'max', 'title': 'MAX', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-               ]
-
-dataset_id = 'dataset.forex'
-
-date_dimension = {'name': 'Forex', 'include_time': True}
-
 date_dimension_maql = """INCLUDE TEMPLATE "URN:GOODDATA:DATE" MODIFY (IDENTIFIER "forex", TITLE "Forex");
 
 # THIS IS MAQL SCRIPT THAT GENERATES TIME DIMENSION LOGICAL MODEL.
@@ -111,73 +174,13 @@ ALTER DATASET {dataset.time.forex} ADD {attr.time.ampm.forex};
 # SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
 SYNCHRONIZE {dataset.time.forex};"""
 
-maql = """
-# THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
-# SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
 
-# CREATE DATASET. DATASET GROUPS ALL FOLLOWING LOGICAL MODEL ELEMENTS TOGETHER.
-CREATE DATASET {dataset.forex} VISUAL(TITLE "forex");
-
-# CREATE THE FOLDERS THAT GROUP ATTRIBUTES AND FACTS
-CREATE FOLDER {dim.forex} VISUAL(TITLE "Forex") TYPE ATTRIBUTE;
-
-CREATE FOLDER {ffld.forex} VISUAL(TITLE "Forex") TYPE FACT;
-
-# CREATE ATTRIBUTES.
-# ATTRIBUTES ARE CATEGORIES THAT ARE USED FOR SLICING AND DICING THE NUMBERS (FACTS)
-CREATE ATTRIBUTE {attr.forex.id} VISUAL(TITLE "Id") AS KEYS {f_forex.id} FULLSET;
-ALTER DATASET {dataset.forex} ADD {attr.forex.id};
-ALTER DATATYPE {f_forex.nm_id} VARCHAR(32);
-# CREATE FACTS
-# FACTS ARE NUMBERS THAT ARE AGGREGATED BY ATTRIBUTES.
-CREATE FACT {fact.forex.volume} VISUAL(TITLE "VOLUME", FOLDER {ffld.forex}) AS {f_forex.f_volume};
-ALTER DATASET {dataset.forex} ADD {fact.forex.volume};
-ALTER DATATYPE {f_forex.f_volume} DECIMAL(8,4);
-CREATE FACT {fact.forex.open} VISUAL(TITLE "OPEN", FOLDER {ffld.forex}) AS {f_forex.f_open};
-ALTER DATASET {dataset.forex} ADD {fact.forex.open};
-ALTER DATATYPE {f_forex.f_open} DECIMAL(8,4);
-CREATE FACT {fact.forex.close} VISUAL(TITLE "CLOSE", FOLDER {ffld.forex}) AS {f_forex.f_close};
-ALTER DATASET {dataset.forex} ADD {fact.forex.close};
-ALTER DATATYPE {f_forex.f_close} DECIMAL(8,4);
-CREATE FACT {fact.forex.min} VISUAL(TITLE "MIN", FOLDER {ffld.forex}) AS {f_forex.f_min};
-ALTER DATASET {dataset.forex} ADD {fact.forex.min};
-ALTER DATATYPE {f_forex.f_min} DECIMAL(8,4);
-CREATE FACT {fact.forex.max} VISUAL(TITLE "MAX", FOLDER {ffld.forex}) AS {f_forex.f_max};
-ALTER DATASET {dataset.forex} ADD {fact.forex.max};
-ALTER DATATYPE {f_forex.f_max} DECIMAL(8,4);
-# CREATE DATE FACTS
-# DATES ARE REPRESENTED AS FACTS
-# DATES ARE ALSO CONNECTED TO THE DATE DIMENSIONS
-CREATE FACT {dt.forex.time} VISUAL(TITLE "TIME (Date)", FOLDER {ffld.forex}) AS {f_forex.dt_time};
-ALTER DATASET {dataset.forex} ADD {dt.forex.time};
-
-CREATE FACT {tm.dt.forex.time} VISUAL(TITLE "TIME (Time)", FOLDER {ffld.forex}) AS {f_forex.tm_time};
-ALTER DATASET {dataset.forex} ADD {tm.dt.forex.time};
-
-# CONNECT THE DATE TO THE DATE DIMENSION
-ALTER ATTRIBUTE {forex.date} ADD KEYS {f_forex.dt_time_id};
-
-# CONNECT THE TIME TO THE TIME DIMENSION
-ALTER ATTRIBUTE {attr.time.second.of.day.forex} ADD KEYS {f_forex.tm_time_id};
-
-# CREATE REFERENCES
-# REFERENCES CONNECT THE DATASET TO OTHER DATASETS
-ALTER ATTRIBUTE {attr.forex.id} ADD LABELS {label.forex.id} VISUAL(TITLE "Id") AS {f_forex.nm_id}; 
-# SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
-SYNCHRONIZE {dataset.forex};
-"""
 
 data_csv = '''"id","time","volume","open","close","min","max","time_dt","time_tm","tm_time_id"
 "a4aea808c4d9fc2a11771e7087177546","04-11-2010 00:48:01","140","1.0023","1.0022","1.0019","1.0026","40485","2881","2881"
 "f610d2a7e98bf4a2d1d40f3ba391effb","04-11-2010 00:49:01","182","1.0024","1.0022","1.0017","1.0024","40485","2941","2941"
 "a0c81959893ee94b19b8183a638e0ce6","04-11-2010 00:50:01","198","1.0022","1.0023","1.0018","1.0025","40485","3001","3001"
 '''
-
-data_list = [{'min': '1.0019', 'max': '1.0026', 'volume': '140', 'time_dt': '40485', 'time': '04-11-2010 00:48:01', 'time_tm': '2881', 'close': '1.0022', 'tm_time_id': '2881', 'open': '1.0023', 'id': 'a4aea808c4d9fc2a11771e7087177546'},
-             {'min': '1.0017', 'max': '1.0024', 'volume': '182', 'time_dt': '40485', 'time': '04-11-2010 00:49:01', 'time_tm': '2941', 'close': '1.0022', 'tm_time_id': '2941', 'open': '1.0024', 'id': 'f610d2a7e98bf4a2d1d40f3ba391effb'},
-             {'min': '1.0018', 'max': '1.0025', 'volume': '198', 'time_dt': '40485', 'time': '04-11-2010 00:50:01', 'time_tm': '3001', 'close': '1.0023', 'tm_time_id': '3001', 'open': '1.0022', 'id': 'a0c81959893ee94b19b8183a638e0ce6'}
-             ]
-
 
 sli_manifest = {"dataSetSLIManifest": {
   "parts":   [

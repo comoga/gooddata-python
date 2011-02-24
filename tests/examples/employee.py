@@ -1,51 +1,15 @@
+from gooddataclient.dataset import Dataset
 
-schema_xml = '''
-<schema>
-  <name>Employee</name>
-  <columns>
-    <column>
-      <name>employee</name>
-      <title>Employee</title>
-      <ldmType>CONNECTION_POINT</ldmType>
-      <folder>Employee</folder>
-    </column>
-    <column>
-      <name>firstname</name>
-      <title>First Name</title>
-      <ldmType>LABEL</ldmType>
-      <reference>employee</reference>
-      <folder>Employee</folder>
-    </column>
-    <column>
-      <name>lastname</name>
-      <title>Last Name</title>
-      <ldmType>LABEL</ldmType>
-      <reference>employee</reference>
-      <folder>Employee</folder>
-    </column>
-    <column>
-      <name>department</name>
-      <title>Department</title>
-      <ldmType>REFERENCE</ldmType>
-      <reference>department</reference>
-      <schemaReference>Department</schemaReference>
-      <folder>Employee</folder>
-    </column>
-  </columns>
-</schema>
-'''
+class ExampleDataset(Dataset):
 
-schema_name = 'Employee'
-
-column_list = [{'name': 'employee', 'title': 'Employee', 'ldmType': 'CONNECTION_POINT', 'folder': 'Employee'},
-               {'name': 'firstname', 'title': 'First Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
-               {'name': 'lastname', 'title': 'Last Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
-               {'name': 'department', 'title': 'Department', 'ldmType': 'REFERENCE', 'reference': 'department', 'schemaReference': 'Department', 'folder': 'Employee'},
-               ]
-
-dataset_id = 'dataset.employee'
-
-maql = """
+    schema_name = 'Employee'
+    dataset_id = 'dataset.employee'
+    column_list = [{'name': 'employee', 'title': 'Employee', 'ldmType': 'CONNECTION_POINT', 'folder': 'Employee'},
+                   {'name': 'firstname', 'title': 'First Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
+                   {'name': 'lastname', 'title': 'Last Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
+                   {'name': 'department', 'title': 'Department', 'ldmType': 'REFERENCE', 'reference': 'department', 'schemaReference': 'Department', 'folder': 'Employee'},
+                   ]
+    maql = """
 # THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
 # SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
 
@@ -83,6 +47,62 @@ ALTER ATTRIBUTE {attr.employee.employee} ADD LABELS {label.employee.employee} VI
 SYNCHRONIZE {dataset.employee};
 """
 
+    def data(self):
+        return [{'employee': 'e1', 'lastname': 'Nowmer', 'department': 'd1', 'firstname': 'Sheri'},
+             {'employee': 'e2', 'lastname': 'Whelply', 'department': 'd1', 'firstname': 'Derrick'},
+             {'employee': 'e6', 'lastname': 'Damstra', 'department': 'd2', 'firstname': 'Roberta'},
+             {'employee': 'e7', 'lastname': 'Kanagaki', 'department': 'd3', 'firstname': 'Rebecca'},
+             {'employee': 'e8', 'lastname': 'Brunner', 'department': 'd11', 'firstname': 'Kim'},
+             {'employee': 'e9', 'lastname': 'Blumberg', 'department': 'd11', 'firstname': 'Brenda'},
+             {'employee': 'e10', 'lastname': 'Stanz', 'department': 'd5', 'firstname': 'Darren'},
+             {'employee': 'e11', 'lastname': 'Murraiin', 'department': 'd11', 'firstname': 'Jonathan'},
+             {'employee': 'e12', 'lastname': 'Creek', 'department': 'd11', 'firstname': 'Jewel'},
+             {'employee': 'e13', 'lastname': 'Medina', 'department': 'd11', 'firstname': 'Peggy'},
+             {'employee': 'e14', 'lastname': 'Rutledge', 'department': 'd11', 'firstname': 'Bryan'},
+             {'employee': 'e15', 'lastname': 'Cavestany', 'department': 'd11', 'firstname': 'Walter'},
+             {'employee': 'e16', 'lastname': 'Planck', 'department': 'd11', 'firstname': 'Peggy'},
+             {'employee': 'e17', 'lastname': 'Marshall', 'department': 'd11', 'firstname': 'Brenda'},
+             {'employee': 'e18', 'lastname': 'Wolter', 'department': 'd11', 'firstname': 'Daniel'},
+             {'employee': 'e19', 'lastname': 'Collins', 'department': 'd11', 'firstname': 'Dianne'}
+             ]
+
+
+schema_xml = '''
+<schema>
+  <name>Employee</name>
+  <columns>
+    <column>
+      <name>employee</name>
+      <title>Employee</title>
+      <ldmType>CONNECTION_POINT</ldmType>
+      <folder>Employee</folder>
+    </column>
+    <column>
+      <name>firstname</name>
+      <title>First Name</title>
+      <ldmType>LABEL</ldmType>
+      <reference>employee</reference>
+      <folder>Employee</folder>
+    </column>
+    <column>
+      <name>lastname</name>
+      <title>Last Name</title>
+      <ldmType>LABEL</ldmType>
+      <reference>employee</reference>
+      <folder>Employee</folder>
+    </column>
+    <column>
+      <name>department</name>
+      <title>Department</title>
+      <ldmType>REFERENCE</ldmType>
+      <reference>department</reference>
+      <schemaReference>Department</schemaReference>
+      <folder>Employee</folder>
+    </column>
+  </columns>
+</schema>
+'''
+
 data_csv = '''"employee","firstname","lastname","department"
 "e1","Sheri","Nowmer","d1"
 "e2","Derrick","Whelply","d1"
@@ -101,25 +121,6 @@ data_csv = '''"employee","firstname","lastname","department"
 "e18","Daniel","Wolter","d11"
 "e19","Dianne","Collins","d11"
 '''
-
-#data from django model like Department.object.values('department', 'name')
-data_list = [{'employee': 'e1', 'lastname': 'Nowmer', 'department': 'd1', 'firstname': 'Sheri'}, 
-             {'employee': 'e2', 'lastname': 'Whelply', 'department': 'd1', 'firstname': 'Derrick'}, 
-             {'employee': 'e6', 'lastname': 'Damstra', 'department': 'd2', 'firstname': 'Roberta'}, 
-             {'employee': 'e7', 'lastname': 'Kanagaki', 'department': 'd3', 'firstname': 'Rebecca'}, 
-             {'employee': 'e8', 'lastname': 'Brunner', 'department': 'd11', 'firstname': 'Kim'}, 
-             {'employee': 'e9', 'lastname': 'Blumberg', 'department': 'd11', 'firstname': 'Brenda'}, 
-             {'employee': 'e10', 'lastname': 'Stanz', 'department': 'd5', 'firstname': 'Darren'}, 
-             {'employee': 'e11', 'lastname': 'Murraiin', 'department': 'd11', 'firstname': 'Jonathan'}, 
-             {'employee': 'e12', 'lastname': 'Creek', 'department': 'd11', 'firstname': 'Jewel'}, 
-             {'employee': 'e13', 'lastname': 'Medina', 'department': 'd11', 'firstname': 'Peggy'}, 
-             {'employee': 'e14', 'lastname': 'Rutledge', 'department': 'd11', 'firstname': 'Bryan'}, 
-             {'employee': 'e15', 'lastname': 'Cavestany', 'department': 'd11', 'firstname': 'Walter'}, 
-             {'employee': 'e16', 'lastname': 'Planck', 'department': 'd11', 'firstname': 'Peggy'}, 
-             {'employee': 'e17', 'lastname': 'Marshall', 'department': 'd11', 'firstname': 'Brenda'}, 
-             {'employee': 'e18', 'lastname': 'Wolter', 'department': 'd11', 'firstname': 'Daniel'}, 
-             {'employee': 'e19', 'lastname': 'Collins', 'department': 'd11', 'firstname': 'Dianne'}
-             ]
 
 sli_manifest = {"dataSetSLIManifest": {
   "parts":   [
@@ -155,5 +156,3 @@ sli_manifest = {"dataSetSLIManifest": {
     "endOfLine": "\n"
   }
 }}
-
-

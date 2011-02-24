@@ -21,20 +21,21 @@ class TestDataset(unittest.TestCase):
 
     def test_create_date_dimension(self):
         for example in examples.examples:
-            if hasattr(example, 'date_dimension'):
-                DateDimension(self.project).create(name=example.date_dimension['name'],
-                               include_time=('include_time' in example.date_dimension))
+            dataset = example.ExampleDataset(self.project)
+            if dataset.date_dimension:
+                DateDimension(self.project).create(name=dataset.date_dimension['name'],
+                               include_time=('include_time' in dataset.date_dimension))
                 # TODO: verify the creation
 
     def test_upload_dataset(self):
         for example in examples.examples:
-            if hasattr(example, 'date_dimension'):
-                DateDimension(self.project).create(name=example.date_dimension['name'],
-                                                   include_time=('include_time' in example.date_dimension))
+            dataset = example.ExampleDataset(self.project)
+            if dataset.date_dimension:
+                DateDimension(self.project).create(name=dataset.date_dimension['name'],
+                                                   include_time=('include_time' in dataset.date_dimension))
 
-            dataset = Dataset(self.project)
-            dataset.upload(example.maql, example.data_csv, example.sli_manifest)
-            dataset_metadata = dataset.get_metadata(name=example.schema_name)
+            dataset.upload()
+            dataset_metadata = dataset.get_metadata(name=dataset.schema_name)
             self.assert_(dataset_metadata['dataUploads'])
             self.assertEquals('OK', dataset_metadata['lastUpload']['dataUploadShort']['status'])
 

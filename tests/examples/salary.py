@@ -1,53 +1,16 @@
+from gooddataclient.dataset import Dataset
 
-schema_xml = '''
-<schema>
-  <name>Salary</name>
-  <columns>
-    <column>
-      <name>salary</name>
-      <title>Salary</title>
-      <ldmType>CONNECTION_POINT</ldmType>
-      <folder>Salary</folder>
-    </column>
-    <column>
-      <name>employee</name>
-      <title>Employee</title>
-      <ldmType>REFERENCE</ldmType>
-      <reference>employee</reference>
-      <schemaReference>Employee</schemaReference>
-      <folder>Salary</folder>
-    </column>
-    <column>
-      <name>payment</name>
-      <title>Payment</title>
-      <ldmType>FACT</ldmType>
-      <folder>Salary</folder>
-    </column>
-    <column>
-      <name>payday</name>
-      <title>Pay Day</title>
-      <ldmType>DATE</ldmType>
-      <format>yyyy-MM-dd</format>
-      <schemaReference>payment</schemaReference>
-      <folder>Salary</folder>
-    </column>
-  </columns>
-</schema>
-'''
+class ExampleDataset(Dataset):
 
-schema_name = 'Salary'
-
-column_list = [{'name': 'salary', 'title': 'Salary', 'ldmType': 'CONNECTION_POINT', 'folder': 'Salary'},
-               {'name': 'employee', 'title': 'Employee', 'ldmType': 'REFERENCE', 'reference': 'employee', 'schemaReference': 'Employee', 'folder': 'Salary'},
-               {'name': 'payment', 'title': 'Payment', 'ldmType': 'FACT', 'folder': 'Salary'},
-               {'name': 'payday', 'title': 'Pay Day', 'ldmType': 'DATE', 'format': 'yyyy-MM-dd', 'schemaReference': 'payment', 'folder': 'Salary'},
-               ]
-
-dataset_id = 'dataset.salary'
-
-date_dimension = {'name': 'Payment'}
-
-maql = """
+    schema_name = 'Salary'
+    dataset_id = 'dataset.salary'
+    column_list = [{'name': 'salary', 'title': 'Salary', 'ldmType': 'CONNECTION_POINT', 'folder': 'Salary'},
+                   {'name': 'employee', 'title': 'Employee', 'ldmType': 'REFERENCE', 'reference': 'employee', 'schemaReference': 'Employee', 'folder': 'Salary'},
+                   {'name': 'payment', 'title': 'Payment', 'ldmType': 'FACT', 'folder': 'Salary'},
+                   {'name': 'payday', 'title': 'Pay Day', 'ldmType': 'DATE', 'format': 'yyyy-MM-dd', 'schemaReference': 'payment', 'folder': 'Salary'},
+                   ]
+    date_dimension = {'name': 'Payment'}
+    maql = """
 # THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
 # SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
 
@@ -88,6 +51,63 @@ ALTER ATTRIBUTE {attr.salary.salary} ADD LABELS {label.salary.salary} VISUAL(TIT
 SYNCHRONIZE {dataset.salary};
 """
 
+    def data(self):
+        return [{'salary': 's1', 'employee': 'e1', 'payday': '2006-01-01', 'payment': '10230', 'payday_dt': '38717'},
+                 {'salary': 's2', 'employee': 'e2', 'payday': '2006-01-01', 'payment': '4810', 'payday_dt': '38717'},
+                 {'salary': 's3', 'employee': 'e6', 'payday': '2006-01-01', 'payment': '6080', 'payday_dt': '38717'},
+                 {'salary': 's4', 'employee': 'e7', 'payday': '2006-01-01', 'payment': '5740', 'payday_dt': '38717'},
+                 {'salary': 's5', 'employee': 'e10', 'payday': '2006-01-01', 'payment': '6630', 'payday_dt': '38717'},
+                 {'salary': 's9', 'employee': 'e23', 'payday': '2006-01-01', 'payment': '4230', 'payday_dt': '38717'},
+                 {'salary': 's10', 'employee': 'e24', 'payday': '2006-01-01', 'payment': '4230', 'payday_dt': '38717'},
+                 {'salary': 's11', 'employee': 'e25', 'payday': '2006-01-01', 'payment': '3790', 'payday_dt': '38717'},
+                 {'salary': 's12', 'employee': 'e26', 'payday': '2006-01-01', 'payment': '3420', 'payday_dt': '38717'},
+                 {'salary': 's13', 'employee': 'e27', 'payday': '2006-01-01', 'payment': '4220', 'payday_dt': '38717'},
+                 {'salary': 's14', 'employee': 'e28', 'payday': '2006-01-01', 'payment': '3330', 'payday_dt': '38717'},
+                 {'salary': 's15', 'employee': 'e29', 'payday': '2006-01-01', 'payment': '3990', 'payday_dt': '38717'},
+                 {'salary': 's16', 'employee': 'e30', 'payday': '2006-01-01', 'payment': '3610', 'payday_dt': '38717'},
+                 {'salary': 's17', 'employee': 'e31', 'payday': '2006-01-01', 'payment': '4350', 'payday_dt': '38717'},
+                 {'salary': 's18', 'employee': 'e32', 'payday': '2006-01-01', 'payment': '3340', 'payday_dt': '38717'},
+                 {'salary': 's19', 'employee': 'e33', 'payday': '2006-01-01', 'payment': '3990', 'payday_dt': '38717'},
+                 {'salary': 's20', 'employee': 'e34', 'payday': '2006-01-01', 'payment': '3630', 'payday_dt': '38717'}
+                 ]
+
+
+schema_xml = '''
+<schema>
+  <name>Salary</name>
+  <columns>
+    <column>
+      <name>salary</name>
+      <title>Salary</title>
+      <ldmType>CONNECTION_POINT</ldmType>
+      <folder>Salary</folder>
+    </column>
+    <column>
+      <name>employee</name>
+      <title>Employee</title>
+      <ldmType>REFERENCE</ldmType>
+      <reference>employee</reference>
+      <schemaReference>Employee</schemaReference>
+      <folder>Salary</folder>
+    </column>
+    <column>
+      <name>payment</name>
+      <title>Payment</title>
+      <ldmType>FACT</ldmType>
+      <folder>Salary</folder>
+    </column>
+    <column>
+      <name>payday</name>
+      <title>Pay Day</title>
+      <ldmType>DATE</ldmType>
+      <format>yyyy-MM-dd</format>
+      <schemaReference>payment</schemaReference>
+      <folder>Salary</folder>
+    </column>
+  </columns>
+</schema>
+'''
+
 data_csv = '''"salary","employee","payment","payday","payday_dt"
 "s1","e1","10230","2006-01-01","38717"
 "s2","e2","4810","2006-01-01","38717"
@@ -107,26 +127,6 @@ data_csv = '''"salary","employee","payment","payday","payday_dt"
 "s19","e33","3990","2006-01-01","38717"
 "s20","e34","3630","2006-01-01","38717"
 '''
-
-#data from django model like Department.object.values('department', 'name')
-data_list = [{'salary': 's1', 'employee': 'e1', 'payday': '2006-01-01', 'payment': '10230', 'payday_dt': '38717'},
-             {'salary': 's2', 'employee': 'e2', 'payday': '2006-01-01', 'payment': '4810', 'payday_dt': '38717'},
-             {'salary': 's3', 'employee': 'e6', 'payday': '2006-01-01', 'payment': '6080', 'payday_dt': '38717'},
-             {'salary': 's4', 'employee': 'e7', 'payday': '2006-01-01', 'payment': '5740', 'payday_dt': '38717'},
-             {'salary': 's5', 'employee': 'e10', 'payday': '2006-01-01', 'payment': '6630', 'payday_dt': '38717'},
-             {'salary': 's9', 'employee': 'e23', 'payday': '2006-01-01', 'payment': '4230', 'payday_dt': '38717'},
-             {'salary': 's10', 'employee': 'e24', 'payday': '2006-01-01', 'payment': '4230', 'payday_dt': '38717'},
-             {'salary': 's11', 'employee': 'e25', 'payday': '2006-01-01', 'payment': '3790', 'payday_dt': '38717'},
-             {'salary': 's12', 'employee': 'e26', 'payday': '2006-01-01', 'payment': '3420', 'payday_dt': '38717'},
-             {'salary': 's13', 'employee': 'e27', 'payday': '2006-01-01', 'payment': '4220', 'payday_dt': '38717'},
-             {'salary': 's14', 'employee': 'e28', 'payday': '2006-01-01', 'payment': '3330', 'payday_dt': '38717'},
-             {'salary': 's15', 'employee': 'e29', 'payday': '2006-01-01', 'payment': '3990', 'payday_dt': '38717'},
-             {'salary': 's16', 'employee': 'e30', 'payday': '2006-01-01', 'payment': '3610', 'payday_dt': '38717'},
-             {'salary': 's17', 'employee': 'e31', 'payday': '2006-01-01', 'payment': '4350', 'payday_dt': '38717'},
-             {'salary': 's18', 'employee': 'e32', 'payday': '2006-01-01', 'payment': '3340', 'payday_dt': '38717'},
-             {'salary': 's19', 'employee': 'e33', 'payday': '2006-01-01', 'payment': '3990', 'payday_dt': '38717'},
-             {'salary': 's20', 'employee': 'e34', 'payday': '2006-01-01', 'payment': '3630', 'payday_dt': '38717'}
-             ]
 
 # getSLIManifest in SLI.java
 sli_manifest = {"dataSetSLIManifest": {

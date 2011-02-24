@@ -14,7 +14,7 @@ Basic scenario::
 
 	connection = Connection(username, password)
 	project = Project(connection).load(name='project_name')
-	Dataset(project).upload(maql, data, sli_manifest)
+	SomeDataset(project).upload()
 
 Executing the Forex example::
 
@@ -27,9 +27,7 @@ Executing the Forex example::
 	connection = Connection(username, password)
 	project = Project(connection).load(name='forex')
 	DateDimension(project).create(name='Forex', include_time=True)
-	sli_manifest = get_sli_manifest(example.column_list, example.schema_name,
-                                    example.dataset_id)
-	Dataset(project).upload(example.maql, example.data, sli_manifest)
+	example.ExampleDataset(project).upload()
 
 Working with the project::
 
