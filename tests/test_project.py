@@ -1,7 +1,7 @@
 import unittest
 
 from gooddataclient.connection import Connection
-from gooddataclient.project import Project
+from gooddataclient.project import Project, delete_projects_by_name
 from gooddataclient.dataset import Dataset, DateDimension
 from gooddataclient.exceptions import DataSetNotFoundError,\
     ProjectNotOpenedError, ProjectNotFoundError
@@ -17,7 +17,7 @@ class TestProject(unittest.TestCase):
     def setUp(self):
         self.connection = Connection(username, password, debug=0)
         #drop all the test projects:
-        Project(self.connection).delete_projects_by_name(TEST_PROJECT_NAME)
+        delete_projects_by_name(self.connection, TEST_PROJECT_NAME)
         # you can delete here multiple directories from webdav
         for dir_name in ():
             self.connection.delete_webdav_dir(dir_name)

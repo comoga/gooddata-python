@@ -8,13 +8,22 @@ Usage
 =====
 Basic scenario::
 
+	from gooddataclient.connection import Connection
+	from gooddataclient.project import Project
+	from gooddataclient.dataset import Dataset
+
 	connection = Connection(username, password)
 	project = Project(connection).load(name='project_name')
 	Dataset(project).upload(maql, data, sli_manifest)
 
 Executing the Forex example::
 
+	from gooddataclient.connection import Connection
+	from gooddataclient.project import Project
+	from gooddataclient.dataset import Dataset, DateDimension
+	from gooddataclient.manifest import get_sli_manifest
 	from tests.examples import forex as example
+
 	connection = Connection(username, password)
 	project = Project(connection).load(name='forex')
 	DateDimension(project).create(name='Forex', include_time=True)
@@ -24,12 +33,15 @@ Executing the Forex example::
 
 Working with the project::
 
+	from gooddataclient.connection import Connection
+	from gooddataclient.project import Project, delete_projects_by_name
+
 	connection = Connection(username, password)
 	project = Project(connection)
 	project = project.load(name='project_name')
 	project = project.create('project_name')
 	project.delete()
-	project.delete_projects_by_name('project_name')
+	delete_projects_by_name(connection, 'project_name')
 
 Project operations are handled directly by connection, only the deletion of the current project is handled by a project itself.
 

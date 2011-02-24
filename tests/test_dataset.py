@@ -1,6 +1,6 @@
 import unittest
 
-from gooddataclient.project import Project
+from gooddataclient.project import Project, delete_projects_by_name
 from gooddataclient.connection import Connection
 from gooddataclient.dataset import Dataset, DateDimension
 
@@ -13,7 +13,7 @@ class TestDataset(unittest.TestCase):
     def setUp(self):
         self.connection = Connection(username, password, debug=0)
         #drop all the test projects:
-        Project(self.connection).delete_projects_by_name(TEST_PROJECT_NAME)
+        delete_projects_by_name(self.connection, TEST_PROJECT_NAME)
         self.project = Project(self.connection).create(TEST_PROJECT_NAME)
 
     def tearDown(self):

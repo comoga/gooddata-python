@@ -8,6 +8,17 @@ from gooddataclient.exceptions import ProjectNotOpenedError, UploadFailed,\
 
 logger = logging.getLogger("gooddataclient")
 
+def delete_projects_by_name(connection, name):
+    """Delete all GoodData projects by that name"""
+    logger.debug('Dropping project by name %s' % name)
+    try:
+        while True:
+            Project(connection).load(name=name).delete()
+    except ProjectNotFoundError:
+        pass
+
+
+
 class Project(object):
 
     PROJECTS_URI = '/gdc/projects'
@@ -46,16 +57,6 @@ class Project(object):
         id = response['uri'].split('/')[-1]
         logger.debug("Created project name=%s with id=%s" % (name, id))
         return self.load(id=id)
-
-    def delete_projects_by_name(self, name):
-        """Delete all GoodData projects by that name"""
-        logger.debug('Dropping project by name %s' % name)
-        try:
-            while True:
-                self.load(name=name)
-                self.delete()
-        except ProjectNotFoundError:
-            pass
 
     def delete(self):
         """Delete a GoodData project"""
