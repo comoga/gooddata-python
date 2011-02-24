@@ -71,6 +71,7 @@ class DateDimension(object):
         self.project.execute_maql(self.get_maql(name, include_time))
         if include_time:
             self.upload_time(name)
+        return self
 
     def upload_time(self, name):
         data = open(os.path.join(os.path.dirname(__file__), 'resources',

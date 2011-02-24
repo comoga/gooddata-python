@@ -9,26 +9,27 @@ Usage
 Basic scenario::
 
 	connection = Connection(username, password)
-	project = connection.get_project('project_name')
-	project.upload_dataset(maql, data, sli_manifest)
+	project = Project(connection).load(name='project_name')
+	Dataset(project).upload(maql, data, sli_manifest)
 
 Executing the Forex example::
 
 	from tests.examples import forex as example
 	connection = Connection(username, password)
-	project = connection.get_project('forex')
-	project.create_date_dimension(name='Forex', include_time=True)
+	project = Project(connection).load(name='forex')
+	DateDimension(project).create(name='Forex', include_time=True)
 	sli_manifest = get_sli_manifest(example.column_list, example.schema_name,
                                     example.dataset_id)
-	project.upload_dataset(example.maql, example.data, sli_manifest)
+	Dataset(project).upload(example.maql, example.data, sli_manifest)
 
 Working with the project::
 
 	connection = Connection(username, password)
-	project = connection.get_project('project_name')
-	project = connection.create_project('project_name')
+	project = Project(connection)
+	project = project.load(name='project_name')
+	project = project.create('project_name')
 	project.delete()
-	connection.delete_projects_by_name('project_name')
+	project.delete_projects_by_name('project_name')
 
 Project operations are handled directly by connection, only the deletion of the current project is handled by a project itself.
 

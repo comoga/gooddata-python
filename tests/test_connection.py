@@ -24,18 +24,6 @@ class TestConnection(unittest.TestCase):
         # you can delete here multiple directories from webdav
         for dir_name in ():
             connection.webdav.delete(dir_name)
-
-    def test_create_and_delete_project(self):
-        connection = Connection(username, password, debug=0)
-        #drop all the test projects:
-        connection.delete_projects_by_name(TEST_PROJECT_NAME)
-        project = connection.create_project(TEST_PROJECT_NAME)
-        self.assert_(project is not None)
-        self.assert_(project.id is not None)
-        project.delete()
-        self.assertRaises(ProjectNotOpenedError, project.delete)
-        self.assertRaises(ProjectNotFoundError, connection.get_project, 
-                          name=TEST_PROJECT_NAME)
     
     def test_upload(self):
         example = examples.examples[0]

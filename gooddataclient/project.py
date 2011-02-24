@@ -3,7 +3,8 @@ import time
 import urllib2
 import logging
 
-from gooddataclient.exceptions import ProjectNotOpenedError, UploadFailed
+from gooddataclient.exceptions import ProjectNotOpenedError, UploadFailed,\
+    ProjectNotFoundError
 
 logger = logging.getLogger("gooddataclient")
 
@@ -14,9 +15,47 @@ class Project(object):
     MAQL_EXEC_URI = '/gdc/md/%s/ldm/manage'
     PULL_URI = '/gdc/md/%s/etl/pull'
 
-    def __init__(self, connection, id):
+    def __init__(self, connection):
         self.connection = connection
-        self.id = id
+
+    def load(self, id=None, name=None):
+        self.id = id or self.get_id_by_name(name)
+        return self
+
+    def get_id_by_name(self, name):
+        """Retrieve the project identifier"""
+        data = self.connection.get_metadata()
+        for link in data['about']['links']:
+            if link['title'] == name:
+                logger.debug('Retrieved Project identifier for %s: %s' % (name, link['identifier']))
+                return link['identifier']
+        raise ProjectNotFoundError('Failed to retrieve Project identifier for %s' % (name))
+
+    def create(self, name, desc=None, template_uri=None):
+        """Create a new GoodData project"""
+        request_data = {'project': {'meta': {'title': name,
+                                             'summary': desc,
+                                             },
+                                    'content': {'guidedNavigation': '1',
+                                                },
+                                    }}
+        if template_uri:
+            request_data['project']['meta']['projectTemplate'] = template_uri
+
+        response = self.connection.request(Project.PROJECTS_URI, request_data)
+        id = response['uri'].split('/')[-1]
+        logger.debug("Created project name=%s with id=%s" % (name, id))
+        return self.load(id=id)
+
+    def delete_projects_by_name(self, name):
+        """Delete all GoodData projects by that name"""
+        logger.debug('Dropping project by name %s' % name)
+        try:
+            while True:
+                self.load(name=name)
+                self.delete()
+        except ProjectNotFoundError:
+            pass
 
     def delete(self):
         """Delete a GoodData project"""

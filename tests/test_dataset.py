@@ -1,34 +1,32 @@
 import unittest
 
+from gooddataclient.project import Project
 from gooddataclient.connection import Connection
 from gooddataclient.dataset import Dataset, DateDimension
 
 from tests.credentials import password, username
-from tests import logger, examples
 from tests.test_project import TEST_PROJECT_NAME
+from tests import logger, examples
 
 class TestDataset(unittest.TestCase):
 
     def setUp(self):
         self.connection = Connection(username, password, debug=0)
         #drop all the test projects:
-        self.connection.delete_projects_by_name(TEST_PROJECT_NAME)
-        self.project = self.connection.create_project(TEST_PROJECT_NAME)
+        Project(self.connection).delete_projects_by_name(TEST_PROJECT_NAME)
+        self.project = Project(self.connection).create(TEST_PROJECT_NAME)
 
     def tearDown(self):
         self.project.delete()
 
-
-    def xtest_create_date_dimension(self):
+    def test_create_date_dimension(self):
         for example in examples.examples:
-            if not hasattr(example, 'date_dimension'):
-                continue
-            date_dimension = DateDimension(self.project)
-            date_dimension.create(name=example.date_dimension['name'],
-                                  include_time=('include_time' in example.date_dimension))
-            # TODO: verify the creation
+            if hasattr(example, 'date_dimension'):
+                DateDimension(self.project).create(name=example.date_dimension['name'],
+                               include_time=('include_time' in example.date_dimension))
+                # TODO: verify the creation
 
-    def xtest_upload_dataset(self):
+    def test_upload_dataset(self):
         for example in examples.examples:
             if hasattr(example, 'date_dimension'):
                 DateDimension(self.project).create(name=example.date_dimension['name'],

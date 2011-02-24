@@ -4,8 +4,7 @@ import cookielib
 import simplejson as json
 import logging
 
-from gooddataclient.project import Project
-from gooddataclient.exceptions import AuthenticationError, ProjectNotFoundError
+from gooddataclient.exceptions import AuthenticationError
 from gooddataclient.archiver import create_archive, DEFAULT_ARCHIVE_NAME
 
 logger = logging.getLogger("gooddataclient")
@@ -90,45 +89,6 @@ class Connection(object):
 
     def get_metadata(self):
         return self.request(self.MD_URI)
-
-    def get_project(self, id=None, name=None):
-        id = id or self.get_project_id_by_name(name)
-        return Project(self, id)
-
-    def get_project_id_by_name(self, name):
-        """Retrieve the project identifier"""
-        data = self.get_metadata()
-        for link in data['about']['links']:
-            if link['title'] == name:
-                logger.debug('Retrieved Project identifier for %s: %s' % (name, link['identifier']))
-                return link['identifier']
-        raise ProjectNotFoundError('Failed to retrieve Project identifier for %s' % (name))
-
-    def create_project(self, name, desc=None, template_uri=None):
-        """Create a new GoodData project"""
-        request_data = {'project': {'meta': {'title': name,
-                                             'summary': desc,
-                                             },
-                                    'content': {'guidedNavigation': '1',
-                                                },
-                                    }}
-        if template_uri:
-            request_data['project']['meta']['projectTemplate'] = template_uri
-
-        response = self.request(Project.PROJECTS_URI, request_data)
-        id = response['uri'].split('/')[-1]
-        logger.debug("Created project name=%s with id=%s" % (name, id))
-        return self.get_project(id=id)
-
-    def delete_projects_by_name(self, name):
-        """Delete all GoodData projects by that name"""
-        logger.debug('Dropping project by name %s' % name)
-        try:
-            while True:
-                project = self.get_project(name=name)
-                project.delete()
-        except ProjectNotFoundError:
-            pass
 
 
 class Webdav(Connection):
