@@ -39,11 +39,18 @@ class Dataset(object):
     def data(self):
         raise NotImplementedError
 
-    def upload(self):
-        # TODO: check if not already created, do not exec maql, but always upload
+    def create(self):
+        if self.date_dimension:
+            DateDimension(self.project).create(name=self.date_dimension['name'],
+                                               include_time=('include_time' in self.date_dimension))
         self.project.execute_maql(self.maql)
 
-        sli_manifest = get_sli_manifest(self.column_list, self.schema_name, 
+    def upload(self):
+        try:
+            self.get_metadata(self.schema_name)
+        except DataSetNotFoundError:
+            self.create()
+        sli_manifest = get_sli_manifest(self.column_list, self.schema_name,
                                         self.dataset_id)
         dir_name = self.connection.webdav.upload(self.data(), sli_manifest)
         self.project.integrate_uploaded_data(dir_name)

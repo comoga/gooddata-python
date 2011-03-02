@@ -4,7 +4,7 @@ import urllib2
 import logging
 
 from gooddataclient.exceptions import ProjectNotOpenedError, UploadFailed,\
-    ProjectNotFoundError
+    ProjectNotFoundError, MaqlExecutionFailed
 
 logger = logging.getLogger("gooddataclient")
 
@@ -70,11 +70,11 @@ class Project(object):
         data = {'manage': {'maql': maql}}
         try:
             response = self.connection.request(self.MAQL_EXEC_URI % self.id, data)
-        except urllib2.URLError:
-            return False
-        if len(response['uris']) > 0:
-            return True
-        return False
+            if len(response['uris']) == 0:
+                raise MaqlExecutionFailed
+        except urllib2.URLError, msg:
+            logger.debug(msg)
+            raise MaqlExecutionFailed
 
     def integrate_uploaded_data(self, dir_name, wait_for_finish=True):
         response = self.connection.request(self.PULL_URI % self.id,

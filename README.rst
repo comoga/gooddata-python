@@ -14,7 +14,8 @@ Basic scenario::
 
 	connection = Connection(username, password)
 	project = Project(connection).load(name='project_name')
-	SomeDataset(project).upload()
+	dataset = SomeDataset(project)
+	dataset.upload()
 
 Executing the Forex example::
 
@@ -26,8 +27,8 @@ Executing the Forex example::
 
 	connection = Connection(username, password)
 	project = Project(connection).load(name='forex')
-	DateDimension(project).create(name='Forex', include_time=True)
-	example.ExampleDataset(project).upload()
+	dataset = example.ExampleDataset(project)
+	dataset.upload()
 
 Working with the project::
 
@@ -61,5 +62,6 @@ The tests are running against a live GoodData API and not a mock one.
 To-do
 =====
 * Support for generating MAQL
+* Creating Metrics, Reports and Dashboards if possible 
 * Executing all examples from GoodData-CL
 * Packaging

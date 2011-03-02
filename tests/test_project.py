@@ -2,9 +2,9 @@ import unittest
 
 from gooddataclient.connection import Connection
 from gooddataclient.project import Project, delete_projects_by_name
-from gooddataclient.dataset import Dataset, DateDimension
+from gooddataclient.dataset import DateDimension
 from gooddataclient.exceptions import DataSetNotFoundError,\
-    ProjectNotOpenedError, ProjectNotFoundError
+    ProjectNotOpenedError, ProjectNotFoundError, MaqlExecutionFailed
 
 from tests.credentials import password, username
 from tests import logger, examples
@@ -33,16 +33,16 @@ class TestProject(unittest.TestCase):
 
     def test_create_structure(self):
         project = Project(self.connection).create(TEST_PROJECT_NAME)
-        self.assertFalse(project.execute_maql('CREATE DATASET {dat'))
+        self.assertRaises(MaqlExecutionFailed, project.execute_maql, 'CREATE DATASET {dat')
         for example in examples.examples:
             dataset = example.ExampleDataset(project)
             self.assertRaises(DataSetNotFoundError, dataset.get_metadata,
                               name=dataset.schema_name)
             if dataset.date_dimension:
-                self.assertFalse(project.execute_maql(dataset.maql), dataset.maql)
+                self.assertRaises(MaqlExecutionFailed, project.execute_maql, dataset.maql)
                 DateDimension(project).create(name=dataset.date_dimension['name'],
                                                    include_time=('include_time' in dataset.date_dimension))
-            self.assert_(project.execute_maql(dataset.maql), dataset.maql)
+            project.execute_maql(dataset.maql)
             self.assert_(dataset.get_metadata(name=dataset.schema_name))
         project.delete()
 

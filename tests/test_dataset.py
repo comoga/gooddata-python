@@ -2,7 +2,7 @@ import unittest
 
 from gooddataclient.project import Project, delete_projects_by_name
 from gooddataclient.connection import Connection
-from gooddataclient.dataset import Dataset, DateDimension
+from gooddataclient.dataset import DateDimension
 
 from tests.credentials import password, username
 from tests.test_project import TEST_PROJECT_NAME
@@ -30,14 +30,12 @@ class TestDataset(unittest.TestCase):
     def test_upload_dataset(self):
         for example in examples.examples:
             dataset = example.ExampleDataset(self.project)
-            if dataset.date_dimension:
-                DateDimension(self.project).create(name=dataset.date_dimension['name'],
-                                                   include_time=('include_time' in dataset.date_dimension))
-
             dataset.upload()
             dataset_metadata = dataset.get_metadata(name=dataset.schema_name)
             self.assert_(dataset_metadata['dataUploads'])
             self.assertEquals('OK', dataset_metadata['lastUpload']['dataUploadShort']['status'])
+            dataset.upload()
+            # TODO: check different data for the upload
 
     def test_date_maql(self):
         date_dimension = DateDimension(self.project)

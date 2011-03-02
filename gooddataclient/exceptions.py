@@ -13,3 +13,6 @@ class DataSetNotFoundError(Exception):
 
 class UploadFailed(Exception):
     pass
+
+class MaqlExecutionFailed(Exception):
+    pass
