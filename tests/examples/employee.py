@@ -9,7 +9,28 @@ class ExampleDataset(Dataset):
                    {'name': 'lastname', 'title': 'Last Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
                    {'name': 'department', 'title': 'Department', 'ldmType': 'REFERENCE', 'reference': 'department', 'schemaReference': 'Department', 'folder': 'Employee'},
                    ]
-    maql = """
+
+    def data(self):
+        return [{'employee': 'e1', 'lastname': 'Nowmer', 'department': 'd1', 'firstname': 'Sheri'},
+             {'employee': 'e2', 'lastname': 'Whelply', 'department': 'd1', 'firstname': 'Derrick'},
+             {'employee': 'e6', 'lastname': 'Damstra', 'department': 'd2', 'firstname': 'Roberta'},
+             {'employee': 'e7', 'lastname': 'Kanagaki', 'department': 'd3', 'firstname': 'Rebecca'},
+             {'employee': 'e8', 'lastname': 'Brunner', 'department': 'd11', 'firstname': 'Kim'},
+             {'employee': 'e9', 'lastname': 'Blumberg', 'department': 'd11', 'firstname': 'Brenda'},
+             {'employee': 'e10', 'lastname': 'Stanz', 'department': 'd5', 'firstname': 'Darren'},
+             {'employee': 'e11', 'lastname': 'Murraiin', 'department': 'd11', 'firstname': 'Jonathan'},
+             {'employee': 'e12', 'lastname': 'Creek', 'department': 'd11', 'firstname': 'Jewel'},
+             {'employee': 'e13', 'lastname': 'Medina', 'department': 'd11', 'firstname': 'Peggy'},
+             {'employee': 'e14', 'lastname': 'Rutledge', 'department': 'd11', 'firstname': 'Bryan'},
+             {'employee': 'e15', 'lastname': 'Cavestany', 'department': 'd11', 'firstname': 'Walter'},
+             {'employee': 'e16', 'lastname': 'Planck', 'department': 'd11', 'firstname': 'Peggy'},
+             {'employee': 'e17', 'lastname': 'Marshall', 'department': 'd11', 'firstname': 'Brenda'},
+             {'employee': 'e18', 'lastname': 'Wolter', 'department': 'd11', 'firstname': 'Daniel'},
+             {'employee': 'e19', 'lastname': 'Collins', 'department': 'd11', 'firstname': 'Dianne'}
+             ]
+
+
+maql = """
 # THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
 # SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
 
@@ -46,26 +67,6 @@ ALTER ATTRIBUTE {attr.employee.employee} ADD LABELS {label.employee.employee} VI
 # SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
 SYNCHRONIZE {dataset.employee};
 """
-
-    def data(self):
-        return [{'employee': 'e1', 'lastname': 'Nowmer', 'department': 'd1', 'firstname': 'Sheri'},
-             {'employee': 'e2', 'lastname': 'Whelply', 'department': 'd1', 'firstname': 'Derrick'},
-             {'employee': 'e6', 'lastname': 'Damstra', 'department': 'd2', 'firstname': 'Roberta'},
-             {'employee': 'e7', 'lastname': 'Kanagaki', 'department': 'd3', 'firstname': 'Rebecca'},
-             {'employee': 'e8', 'lastname': 'Brunner', 'department': 'd11', 'firstname': 'Kim'},
-             {'employee': 'e9', 'lastname': 'Blumberg', 'department': 'd11', 'firstname': 'Brenda'},
-             {'employee': 'e10', 'lastname': 'Stanz', 'department': 'd5', 'firstname': 'Darren'},
-             {'employee': 'e11', 'lastname': 'Murraiin', 'department': 'd11', 'firstname': 'Jonathan'},
-             {'employee': 'e12', 'lastname': 'Creek', 'department': 'd11', 'firstname': 'Jewel'},
-             {'employee': 'e13', 'lastname': 'Medina', 'department': 'd11', 'firstname': 'Peggy'},
-             {'employee': 'e14', 'lastname': 'Rutledge', 'department': 'd11', 'firstname': 'Bryan'},
-             {'employee': 'e15', 'lastname': 'Cavestany', 'department': 'd11', 'firstname': 'Walter'},
-             {'employee': 'e16', 'lastname': 'Planck', 'department': 'd11', 'firstname': 'Peggy'},
-             {'employee': 'e17', 'lastname': 'Marshall', 'department': 'd11', 'firstname': 'Brenda'},
-             {'employee': 'e18', 'lastname': 'Wolter', 'department': 'd11', 'firstname': 'Daniel'},
-             {'employee': 'e19', 'lastname': 'Collins', 'department': 'd11', 'firstname': 'Dianne'}
-             ]
-
 
 schema_xml = '''
 <schema>

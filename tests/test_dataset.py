@@ -43,8 +43,9 @@ class TestDataset(unittest.TestCase):
         self.assertEquals('INCLUDE TEMPLATE "URN:GOODDATA:DATE" MODIFY (IDENTIFIER "test", TITLE "Test");\n\n',
                           date_dimension.get_maql('Test'))
         self.assertEquals(examples.forex.date_dimension_maql, date_dimension.get_maql('Forex', include_time=True))
-        self.assertEquals(examples.forex.date_dimension_maql.replace('forex', 'xerof').replace('Forex', 'Xerof'), 
+        self.assertEquals(examples.forex.date_dimension_maql.replace('forex', 'xerof').replace('Forex', 'Xerof'),
                           date_dimension.get_maql('Xerof', include_time=True))
+
 
 
 if __name__ == '__main__':

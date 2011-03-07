@@ -13,7 +13,15 @@ class ExampleDataset(Dataset):
                    {'name': 'max', 'title': 'MAX', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
                    ]
     date_dimension = {'name': 'Forex', 'include_time': True}
-    maql = """
+
+    def data(self):
+        return [{'min': '1.0019', 'max': '1.0026', 'volume': '140', 'time_dt': '40485', 'time': '04-11-2010 00:48:01', 'time_tm': '2881', 'close': '1.0022', 'tm_time_id': '2881', 'open': '1.0023', 'id': 'a4aea808c4d9fc2a11771e7087177546'},
+                {'min': '1.0017', 'max': '1.0024', 'volume': '182', 'time_dt': '40485', 'time': '04-11-2010 00:49:01', 'time_tm': '2941', 'close': '1.0022', 'tm_time_id': '2941', 'open': '1.0024', 'id': 'f610d2a7e98bf4a2d1d40f3ba391effb'},
+                {'min': '1.0018', 'max': '1.0025', 'volume': '198', 'time_dt': '40485', 'time': '04-11-2010 00:50:01', 'time_tm': '3001', 'close': '1.0023', 'tm_time_id': '3001', 'open': '1.0022', 'id': 'a0c81959893ee94b19b8183a638e0ce6'}
+                ]
+
+
+maql = """
 # THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
 # SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
 
@@ -64,18 +72,10 @@ ALTER ATTRIBUTE {attr.time.second.of.day.forex} ADD KEYS {f_forex.tm_time_id};
 
 # CREATE REFERENCES
 # REFERENCES CONNECT THE DATASET TO OTHER DATASETS
-ALTER ATTRIBUTE {attr.forex.id} ADD LABELS {label.forex.id} VISUAL(TITLE "Id") AS {f_forex.nm_id}; 
+ALTER ATTRIBUTE {attr.forex.id} ADD LABELS {label.forex.id} VISUAL(TITLE "Id") AS {f_forex.nm_id};
 # SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
 SYNCHRONIZE {dataset.forex};
 """
-
-    def data(self):
-        return [{'min': '1.0019', 'max': '1.0026', 'volume': '140', 'time_dt': '40485', 'time': '04-11-2010 00:48:01', 'time_tm': '2881', 'close': '1.0022', 'tm_time_id': '2881', 'open': '1.0023', 'id': 'a4aea808c4d9fc2a11771e7087177546'},
-                {'min': '1.0017', 'max': '1.0024', 'volume': '182', 'time_dt': '40485', 'time': '04-11-2010 00:49:01', 'time_tm': '2941', 'close': '1.0022', 'tm_time_id': '2941', 'open': '1.0024', 'id': 'f610d2a7e98bf4a2d1d40f3ba391effb'},
-                {'min': '1.0018', 'max': '1.0025', 'volume': '198', 'time_dt': '40485', 'time': '04-11-2010 00:50:01', 'time_tm': '3001', 'close': '1.0023', 'tm_time_id': '3001', 'open': '1.0022', 'id': 'a0c81959893ee94b19b8183a638e0ce6'}
-                ]
-
-
 
 schema_xml = '''
 <schema>

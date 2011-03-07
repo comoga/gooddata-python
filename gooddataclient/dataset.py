@@ -4,6 +4,7 @@ import logging
 from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import text
 from gooddataclient.manifest import get_sli_manifest
+from gooddataclient.maql import maql_dataset
 
 logger = logging.getLogger("gooddataclient")
 
@@ -43,7 +44,7 @@ class Dataset(object):
         if self.date_dimension:
             DateDimension(self.project).create(name=self.date_dimension['name'],
                                                include_time=('include_time' in self.date_dimension))
-        self.project.execute_maql(self.maql)
+        self.project.execute_maql(self.get_maql())
 
     def upload(self):
         try:
@@ -55,6 +56,9 @@ class Dataset(object):
         dir_name = self.connection.webdav.upload(self.data(), sli_manifest)
         self.project.integrate_uploaded_data(dir_name)
         self.connection.webdav.delete(dir_name)
+
+    def get_maql(self):
+        return maql_dataset(self.schema_name, self.dataset_id, self.column_list)
 
 
 class DateDimension(object):

@@ -67,6 +67,8 @@ class Project(object):
             raise ProjectNotOpenedError()
 
     def execute_maql(self, maql):
+        if not maql:
+            raise AttributeError('MAQL missing, nothing to execute')
         data = {'manage': {'maql': maql}}
         try:
             response = self.connection.request(self.MAQL_EXEC_URI % self.id, data)
