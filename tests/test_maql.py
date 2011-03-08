@@ -9,8 +9,8 @@ from tests import logger, examples
 class TestMaql(unittest.TestCase):
 
     def test_dataset_maql(self):
-        for example in examples.examples:
-            dataset = example.ExampleDataset(Project(None))
+        for (example, ExampleDataset) in examples.examples:
+            dataset = ExampleDataset(Project(None))
             maql_generated = maql_dataset(dataset.schema_name, dataset.column_list)
             diff = '\n'.join(difflib.unified_diff(maql_generated.splitlines(),
                                                   example.maql.splitlines(),

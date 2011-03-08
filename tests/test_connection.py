@@ -26,7 +26,7 @@ class TestConnection(unittest.TestCase):
             connection.webdav.delete(dir_name)
     
     def test_upload(self):
-        example = examples.examples[0]
+        example = examples.examples[0][0]
         connection = Connection(username, password, debug=0)
         dir_name = connection.webdav.upload(example.data_csv, example.sli_manifest)
         self.assert_(len(dir_name) > 0)

@@ -13,12 +13,15 @@ class Dataset(object):
     DATASETS_URI = '/gdc/md/%s/data/sets'
 
     # Defined in child class
-    schema_name = None
     column_list = None
 
     def __init__(self, project):
         self.project = project
         self.connection = project.connection
+
+    @property
+    def schema_name(self):
+        return self.__class__.__name__
 
     def get_datasets_metadata(self):
         return self.connection.request(self.DATASETS_URI % self.project.id)

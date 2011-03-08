@@ -12,8 +12,8 @@ from tests import logger, examples
 class TestArchiver(unittest.TestCase):
 
     def test_csv(self):
-        for example in examples.examples:
-            dataset = example.ExampleDataset(Project(None))
+        for (example, ExampleDataset) in examples.examples:
+            dataset = ExampleDataset(Project(None))
             csv_filename = write_tmp_csv_file(dataset.data(),
                                               example.sli_manifest)
             f = open(csv_filename, 'r')
@@ -24,7 +24,7 @@ class TestArchiver(unittest.TestCase):
 
 
     def test_archive(self):
-        for example in examples.examples:
+        for (example, ExampleDataset) in examples.examples:
             filename = create_archive(example.data_csv, example.sli_manifest)
             zip_file = ZipFile(filename, "r")
             self.assertEquals(None, zip_file.testzip())
@@ -33,9 +33,9 @@ class TestArchiver(unittest.TestCase):
             os.remove(filename)
 
     def test_csv_to_list(self):
-        for example in examples.examples:
+        for (example, ExampleDataset) in examples.examples:
             data_list = csv_to_list(example.data_csv)
-            self.assertEqual(example.ExampleDataset(Project(None)).data(), data_list)
+            self.assertEqual(ExampleDataset(Project(None)).data(), data_list)
 
 
 if __name__ == '__main__':

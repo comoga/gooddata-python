@@ -1,8 +1,7 @@
 from gooddataclient.dataset import Dataset
 
-class ExampleDataset(Dataset):
+class Department(Dataset):
 
-    schema_name = 'Department'
     column_list = [{'name': 'department', 'title': 'Department', 'ldmType': 'ATTRIBUTE', 'folder': 'Department'},
                    {'name': 'name', 'title': 'Name', 'ldmType': 'LABEL', 'reference': 'department', 'folder': 'Department'},
                    ]

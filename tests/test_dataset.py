@@ -20,8 +20,8 @@ class TestDataset(unittest.TestCase):
         self.project.delete()
 
     def test_create_date_dimension(self):
-        for example in examples.examples:
-            dataset = example.ExampleDataset(self.project)
+        for (example, ExampleDataset) in examples.examples:
+            dataset = ExampleDataset(self.project)
             date_dimension = dataset.get_date_dimension()
             if date_dimension:
                 DateDimension(self.project).create(name=date_dimension['schemaReference'],
@@ -29,8 +29,8 @@ class TestDataset(unittest.TestCase):
                 # TODO: verify the creation
 
     def test_upload_dataset(self):
-        for example in examples.examples:
-            dataset = example.ExampleDataset(self.project)
+        for (example, ExampleDataset) in examples.examples:
+            dataset = ExampleDataset(self.project)
             dataset.upload()
             dataset_metadata = dataset.get_metadata(name=dataset.schema_name)
             self.assert_(dataset_metadata['dataUploads'])

@@ -34,8 +34,8 @@ class TestProject(unittest.TestCase):
     def test_create_structure(self):
         project = Project(self.connection).create(TEST_PROJECT_NAME)
         self.assertRaises(MaqlExecutionFailed, project.execute_maql, 'CREATE DATASET {dat')
-        for example in examples.examples:
-            dataset = example.ExampleDataset(project)
+        for (example, ExampleDataset) in examples.examples:
+            dataset = ExampleDataset(project)
             self.assertRaises(DataSetNotFoundError, dataset.get_metadata,
                               name=dataset.schema_name)
             dataset.create()

@@ -2,6 +2,7 @@ import unittest
 from xml.dom.minidom import parseString
 
 from gooddataclient.schema import get_xml_schema
+from gooddataclient.project import Project
 
 from tests import logger, examples
 
@@ -9,10 +10,11 @@ from tests import logger, examples
 class TestSchema(unittest.TestCase):
 
     def test_xml_schema(self):
-        for example in examples.examples:
+        for (example, ExampleDataset) in examples.examples:
             schema = parseString(example.schema_xml.replace(' ', '').replace('\n', ''))
-            gen_schema = parseString(get_xml_schema(example.ExampleDataset.column_list,
-                                                    example.ExampleDataset.schema_name))
+            dataset = ExampleDataset(Project(None))
+            gen_schema = parseString(get_xml_schema(dataset.column_list,
+                                                    dataset.schema_name))
             # TODO: test for XML content (not so easily comparable)
             self.assertEqual(len(schema.childNodes), len(gen_schema.childNodes))
             self.assertEqual(len(schema.childNodes[0].childNodes), len(gen_schema.childNodes[0].childNodes),
