@@ -22,9 +22,10 @@ class TestDataset(unittest.TestCase):
     def test_create_date_dimension(self):
         for example in examples.examples:
             dataset = example.ExampleDataset(self.project)
-            if dataset.date_dimension:
-                DateDimension(self.project).create(name=dataset.date_dimension['name'],
-                               include_time=('include_time' in dataset.date_dimension))
+            date_dimension = dataset.get_date_dimension()
+            if date_dimension:
+                DateDimension(self.project).create(name=date_dimension['schemaReference'],
+                               include_time=('datetime' in date_dimension))
                 # TODO: verify the creation
 
     def test_upload_dataset(self):

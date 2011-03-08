@@ -8,7 +8,6 @@ class ExampleDataset(Dataset):
                    {'name': 'payment', 'title': 'Payment', 'ldmType': 'FACT', 'folder': 'Salary'},
                    {'name': 'payday', 'title': 'Pay Day', 'ldmType': 'DATE', 'format': 'yyyy-MM-dd', 'schemaReference': 'payment', 'folder': 'Salary'},
                    ]
-    date_dimension = {'name': 'Payment'}
 
     def data(self):
         return [{'salary': 's1', 'employee': 'e1', 'payday': '2006-01-01', 'payment': '10230', 'payday_dt': '38717'},

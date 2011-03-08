@@ -13,8 +13,6 @@ class Dataset(object):
     DATASETS_URI = '/gdc/md/%s/data/sets'
 
     # Defined in child class
-    date_dimension = None
-    maql = None
     schema_name = None
     column_list = None
 
@@ -39,10 +37,16 @@ class Dataset(object):
     def data(self):
         raise NotImplementedError
 
+    def get_date_dimension(self):
+        for column in self.column_list:
+            if column['ldmType'] == 'DATE':
+                return column
+
     def create(self):
-        if self.date_dimension:
-            DateDimension(self.project).create(name=self.date_dimension['name'],
-                                               include_time=('include_time' in self.date_dimension))
+        date_dimension = self.get_date_dimension()
+        if date_dimension:
+            DateDimension(self.project).create(name=date_dimension['schemaReference'],
+                                               include_time=('datetime' in date_dimension))
         self.project.execute_maql(self.get_maql())
 
     def upload(self):

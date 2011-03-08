@@ -38,11 +38,7 @@ class TestProject(unittest.TestCase):
             dataset = example.ExampleDataset(project)
             self.assertRaises(DataSetNotFoundError, dataset.get_metadata,
                               name=dataset.schema_name)
-            if dataset.date_dimension:
-                self.assertRaises(MaqlExecutionFailed, project.execute_maql, dataset.get_maql())
-                DateDimension(project).create(name=dataset.date_dimension['name'],
-                                                   include_time=('include_time' in dataset.date_dimension))
-            project.execute_maql(dataset.get_maql())
+            dataset.create()
             self.assert_(dataset.get_metadata(name=dataset.schema_name))
         project.delete()
 
