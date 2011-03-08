@@ -1,4 +1,5 @@
 from gooddataclient.text import to_identifier, to_title
+from gooddataclient.columns import Attribute, Fact, Date, Reference, Label
 
 def maql_create(schema_name):
     return """
@@ -40,89 +41,30 @@ def maql_attributes(schema_name, column_list):
     for column in column_list:
         if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT')\
             or (column['ldmType'] == 'DATE' and 'schemaReference' not in column):
-            try:
-                folder_statement = ', FOLDER {dim.%s}' % to_identifier(column['folder'])
-            except KeyError:
-                folder_statement = ''
-            fks = ''
-            maql.append('CREATE ATTRIBUTE {attr.%s.%s} VISUAL(TITLE "%s"%s) AS KEYS {f_%s.id} FULLSET%s;'\
-                        % (to_identifier(schema_name), to_identifier(column['name']),
-                           to_title(column['title']), folder_statement, to_identifier(schema_name),
-                           fks))
-            maql.append('ALTER DATASET {dataset.%s} ADD {attr.%s.%s};'\
-                        % (to_identifier(schema_name), to_identifier(schema_name), 
-                           to_identifier(column['name'])))
-
-            if 'dataType' in column:
-                data_type = 'VARCHAR(32)' if column['dataType'] == 'IDENTITY' else column['dataType']
-                maql.append('ALTER DATATYPE {f_%s.nm_%s} %s;' \
-                            % (to_identifier(schema_name), to_identifier(column['name']),
-                               data_type))
-            else:
-                maql.append('')
-
+            maql.append(Attribute(schema_name=schema_name, name=column['name'], title=column['title'],
+                                  folder=column['folder'] if 'folder' in column else None,
+                                  dataType=column['dataType'] if 'dataType' in column else None).get_maql())
     return '\n'.join(maql)
 
 def maql_facts(schema_name, column_list):
     maql = ['# CREATE FACTS\n# FACTS ARE NUMBERS THAT ARE AGGREGATED BY ATTRIBUTES.']
     for column in column_list:
         if column['ldmType'] == 'FACT':
-            try:
-                folder_statement = ', FOLDER {ffld.%s}' % to_identifier(column['folder'])
-            except KeyError:
-                folder_statement = ''
-            maql.append('CREATE FACT {fact.%s.%s} VISUAL(TITLE "%s"%s) AS {f_%s.f_%s};'\
-                        % (to_identifier(schema_name), to_identifier(column['name']),
-                           to_title(column['title']), folder_statement,
-                           to_identifier(schema_name), to_identifier(column['name'])))
-            maql.append('ALTER DATASET {dataset.%s} ADD {fact.%s.%s};'\
-                        % (to_identifier(schema_name), to_identifier(schema_name),
-                           to_identifier(column['name'])))
-
-            if 'dataType' in column:
-                data_type = 'VARCHAR(32)' if column['dataType'] == 'IDENTITY' else column['dataType']
-                maql.append('ALTER DATATYPE {f_%s.f_%s} %s;' \
-                            % (to_identifier(schema_name), to_identifier(column['name']),
-                               data_type))
-            else:
-                maql.append('')
-
+            maql.append(Fact(schema_name=schema_name, name=column['name'], title=column['title'],
+                                  folder=column['folder'] if 'folder' in column else None,
+                                  dataType=column['dataType'] if 'dataType' in column else None).get_maql())
+            
     return '\n'.join(maql)
 
 def maql_date_facts(schema_name, column_list):
     maql = ['# CREATE DATE FACTS\n# DATES ARE REPRESENTED AS FACTS\n# DATES ARE ALSO CONNECTED TO THE DATE DIMENSIONS']
     for column in column_list:
         if column['ldmType'] == 'DATE' and 'schemaReference' in column:
-            try:
-                folder_statement = ', FOLDER {ffld.%s}' % to_identifier(column['folder'])
-            except KeyError:
-                folder_statement = ''
-            maql.append('CREATE FACT {dt.%s.%s} VISUAL(TITLE "%s (Date)"%s) AS {f_%s.dt_%s};'\
-                        % (to_identifier(schema_name), to_identifier(column['name']),
-                           to_title(column['title']), folder_statement,
-                           to_identifier(schema_name), to_identifier(column['name'])))
-            maql.append('ALTER DATASET {dataset.%s} ADD {dt.%s.%s};\n'\
-                        % (to_identifier(schema_name), to_identifier(schema_name),
-                           to_identifier(column['name'])))
-            if 'datetime' in column:
-                maql.append('CREATE FACT {tm.dt.%s.%s} VISUAL(TITLE "%s (Time)"%s) AS {f_%s.tm_%s};'\
-                            % (to_identifier(schema_name), to_identifier(column['name']),
-                               to_title(column['title']), folder_statement,
-                               to_identifier(schema_name), to_identifier(column['name'])))
-                maql.append('ALTER DATASET {dataset.%s} ADD {tm.dt.%s.%s};\n'\
-                            % (to_identifier(schema_name), to_identifier(schema_name),
-                               to_identifier(column['name'])))
-
-            maql.append('# CONNECT THE DATE TO THE DATE DIMENSION')
-            maql.append('ALTER ATTRIBUTE {%s.date} ADD KEYS {f_%s.dt_%s_id};\n'\
-                        % (to_identifier(column['schemaReference']),
-                           to_identifier(schema_name), to_identifier(column['name'])))
-            if 'datetime' in column:
-                maql.append('# CONNECT THE TIME TO THE TIME DIMENSION')
-                maql.append('ALTER ATTRIBUTE {attr.time.second.of.day.%s} ADD KEYS {f_%s.tm_%s_id};\n'\
-                            % (to_identifier(column['schemaReference']),
-                               to_identifier(schema_name), to_identifier(column['name'])))
-                
+            maql.append(Date(schema_name=schema_name, name=column['name'], title=column['title'],
+                                  folder=column['folder'] if 'folder' in column else None,
+                                  dataType=column['dataType'] if 'dataType' in column else None,
+                                  schemaReference=column['schemaReference'] if 'schemaReference' in column else None,
+                                  datetime=('datetime' in column)).get_maql())
 
     return '\n'.join(maql)
 
@@ -130,12 +72,12 @@ def maql_references(schema_name, column_list):
     maql = ['# CREATE REFERENCES\n# REFERENCES CONNECT THE DATASET TO OTHER DATASETS']
     for column in column_list:
         if column['ldmType'] == 'REFERENCE':
-            maql.append('# CONNECT THE REFERENCE TO THE APPROPRIATE DIMENSION')
-            maql.append('ALTER ATTRIBUTE {attr.%s.%s} ADD KEYS {f_%s.%s_id};\n'\
-                        % (to_identifier(column['schemaReference']),
-                           to_identifier(column['reference']),
-                           to_identifier(schema_name),
-                           to_identifier(column['name'])))
+            maql.append(Reference(schema_name=schema_name, name=column['name'], title=column['title'],
+                                  folder=column['folder'] if 'folder' in column else None,
+                                  dataType=column['dataType'] if 'dataType' in column else None,
+                                  schemaReference=column['schemaReference'] if 'schemaReference' in column else None,
+                                  reference=column['reference'] if 'reference' in column else None,
+                                  datetime=('datetime' in column)).get_maql())
 
     return '\n'.join(maql)
 
@@ -144,19 +86,15 @@ def maql_labels(schema_name, column_list):
     default_set = False
     for column in column_list:
         if column['ldmType'] == 'LABEL':
-            maql.append('# ADD LABELS TO ATTRIBUTES')
-            maql.append('ALTER ATTRIBUTE {attr.%s.%s} ADD LABELS {label.%s.%s.%s} VISUAL(TITLE "%s") AS {f_%s.nm_%s};' \
-                        % (to_identifier(schema_name), to_identifier(column['reference']),
-                           to_identifier(schema_name), to_identifier(column['reference']),
-                           to_identifier(column['name']), to_title(column['title']),
-                           to_identifier(schema_name), to_identifier(column['name'])))
-            # TODO: DATATYPE
-            maql.append('')
+            label = Label(schema_name=schema_name, name=column['name'], title=column['title'],
+                                  folder=column['folder'] if 'folder' in column else None,
+                                  dataType=column['dataType'] if 'dataType' in column else None,
+                                  schemaReference=column['schemaReference'] if 'schemaReference' in column else None,
+                                  reference=column['reference'] if 'reference' in column else None,
+                                  datetime=('datetime' in column))
+            maql.append(label.get_maql())
             if not default_set:
-                maql.append('ALTER ATTRIBUTE  {attr.%s.%s} DEFAULT LABEL {label.%s.%s.%s};'\
-                            % (to_identifier(schema_name), to_identifier(column['reference']),
-                               to_identifier(schema_name), to_identifier(column['reference']),
-                               to_identifier(column['name'])))
+                maql.append(label.get_maql_default())
                 default_set = True
 
     cp = None
