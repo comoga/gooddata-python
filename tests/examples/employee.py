@@ -3,7 +3,6 @@ from gooddataclient.dataset import Dataset
 class ExampleDataset(Dataset):
 
     schema_name = 'Employee'
-    dataset_id = 'dataset.employee'
     column_list = [{'name': 'employee', 'title': 'Employee', 'ldmType': 'CONNECTION_POINT', 'folder': 'Employee'},
                    {'name': 'firstname', 'title': 'First Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
                    {'name': 'lastname', 'title': 'Last Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},

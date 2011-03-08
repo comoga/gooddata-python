@@ -1,13 +1,13 @@
 from gooddataclient.text import to_identifier, to_title
 
-def maql_create(dataset_id, schema_name):
+def maql_create(schema_name):
     return """
 # THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
 # SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
 
 # CREATE DATASET. DATASET GROUPS ALL FOLLOWING LOGICAL MODEL ELEMENTS TOGETHER.
-CREATE DATASET {%s} VISUAL(TITLE "%s");
-""" % (dataset_id, to_title(schema_name))
+CREATE DATASET {dataset.%s} VISUAL(TITLE "%s");
+""" % (to_identifier(schema_name), to_title(schema_name))
 
 def maql_folders(column_list):
     attribute_folders, fact_folders = [], []
@@ -34,7 +34,7 @@ def maql_folders(column_list):
     maql.append('')
     return '\n'.join(maql)
 
-def maql_attributes(dataset_id, schema_name, column_list):
+def maql_attributes(schema_name, column_list):
     maql = ['# CREATE ATTRIBUTES.\n# ATTRIBUTES ARE CATEGORIES THAT ARE USED FOR SLICING AND DICING THE NUMBERS (FACTS)']
 
     for column in column_list:
@@ -49,8 +49,9 @@ def maql_attributes(dataset_id, schema_name, column_list):
                         % (to_identifier(schema_name), to_identifier(column['name']),
                            to_title(column['title']), folder_statement, to_identifier(schema_name),
                            fks))
-            maql.append('ALTER DATASET {%s} ADD {attr.%s.%s};'\
-                        % (dataset_id, to_identifier(schema_name), to_identifier(column['name'])))
+            maql.append('ALTER DATASET {dataset.%s} ADD {attr.%s.%s};'\
+                        % (to_identifier(schema_name), to_identifier(schema_name), 
+                           to_identifier(column['name'])))
 
             if 'dataType' in column:
                 data_type = 'VARCHAR(32)' if column['dataType'] == 'IDENTITY' else column['dataType']
@@ -170,18 +171,18 @@ def maql_labels(schema_name, column_list):
                    to_identifier(cp['name'] if cp else schema_name)))
     return '\n'.join(maql)
 
-def maql_synchronize(dataset_id):
+def maql_synchronize(schema_name):
     return """# SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
-SYNCHRONIZE {%s};
-""" % dataset_id
+SYNCHRONIZE {dataset.%s};
+""" % to_identifier(schema_name)
 
-def maql_dataset(schema_name, dataset_id, column_list):
-    return '\n'.join((maql_create(dataset_id, schema_name),
+def maql_dataset(schema_name, column_list):
+    return '\n'.join((maql_create(schema_name),
                       maql_folders(column_list),
-                      maql_attributes(dataset_id, schema_name, column_list),
+                      maql_attributes(schema_name, column_list),
                       maql_facts(schema_name, column_list),
                       maql_date_facts(schema_name, column_list),
                       maql_references(schema_name, column_list),
                       maql_labels(schema_name, column_list),
-                      maql_synchronize(dataset_id)))
+                      maql_synchronize(schema_name)))
 

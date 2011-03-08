@@ -16,7 +16,6 @@ class Dataset(object):
     date_dimension = None
     maql = None
     schema_name = None
-    dataset_id = None
     column_list = None
 
     def __init__(self, project):
@@ -51,14 +50,13 @@ class Dataset(object):
             self.get_metadata(self.schema_name)
         except DataSetNotFoundError:
             self.create()
-        sli_manifest = get_sli_manifest(self.column_list, self.schema_name,
-                                        self.dataset_id)
+        sli_manifest = get_sli_manifest(self.column_list, self.schema_name)
         dir_name = self.connection.webdav.upload(self.data(), sli_manifest)
         self.project.integrate_uploaded_data(dir_name)
         self.connection.webdav.delete(dir_name)
 
     def get_maql(self):
-        return maql_dataset(self.schema_name, self.dataset_id, self.column_list)
+        return maql_dataset(self.schema_name, self.column_list)
 
 
 class DateDimension(object):

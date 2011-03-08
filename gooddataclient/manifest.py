@@ -1,5 +1,6 @@
 from gooddataclient import text
 from gooddataclient.archiver import CSV_DATA_FILENAME
+from gooddataclient.text import to_identifier
 
 def get_column_populates(column, schema_name):
     schema_name_id = text.to_identifier(schema_name)
@@ -34,12 +35,11 @@ def get_tm_time_id_column(column, schema_name):
     populates = 'label.time.second.of.day.%s' % text.to_identifier(column['schemaReference'])
     return {'populates': [populates], 'columnName': name, 'mode': 'FULL', 'referenceKey': 1}
 
-def get_sli_manifest(column_list, schema_name, dataset_id):
+def get_sli_manifest(column_list, schema_name):
     '''Create JSON manifest from columns in schema.
     
     @param column_list: list of dicts (created from XML schema)
     @param schema_name: string
-    @param dataset_id: string
     
     See populateColumnsFromSchema in AbstractConnector.java
     '''
@@ -69,7 +69,7 @@ def get_sli_manifest(column_list, schema_name, dataset_id):
 
     return {"dataSetSLIManifest": {"parts": parts,
                                    "file": CSV_DATA_FILENAME,
-                                   "dataSet": dataset_id,
+                                   "dataSet": 'dataset.%s' % to_identifier(schema_name),
                                    "csvParams": {"quoteChar": '"',
                                                  "escapeChar": '"',
                                                  "separatorChar": ",",

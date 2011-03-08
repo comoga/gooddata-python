@@ -3,7 +3,6 @@ from gooddataclient.dataset import Dataset
 class ExampleDataset(Dataset):
 
     schema_name = 'forex'
-    dataset_id = 'dataset.forex'
     column_list = [{'name': 'id', 'title': 'Id', 'ldmType': 'CONNECTION_POINT', 'dataType': 'IDENTITY'},
                    {'name': 'time', 'title': 'TIME', 'ldmType': 'DATE', 'datetime': 'true', 'folder': 'Forex', 'schemaReference': 'Forex', 'format': 'dd-MM-yyyy HH:mm:ss'},
                    {'name': 'volume', 'title': 'VOLUME', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},

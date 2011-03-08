@@ -11,8 +11,7 @@ class TestMaql(unittest.TestCase):
     def test_dataset_maql(self):
         for example in examples.examples:
             dataset = example.ExampleDataset(Project(None))
-            maql_generated = maql_dataset(dataset.schema_name, dataset.dataset_id, 
-                                          dataset.column_list)
+            maql_generated = maql_dataset(dataset.schema_name, dataset.column_list)
             diff = '\n'.join(difflib.unified_diff(maql_generated.splitlines(),
                                                   example.maql.splitlines(),
                                                   lineterm=''))
