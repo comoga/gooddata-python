@@ -41,6 +41,17 @@ class Attribute(Column):
             maql.append('')
         return '\n'.join(maql)
 
+
+class ConnectionPoint(Attribute):
+
+    ldmType = 'CONNECTION_POINT'
+
+    def get_original_label_maql(self):
+        return 'ALTER ATTRIBUTE {attr.%s.%s} ADD LABELS {label.%s.%s} VISUAL(TITLE "%s") AS {f_%s.nm_%s};'\
+                % (self.schema_name, self.name, self.schema_name, self.name,
+                   self.title, self.schema_name, self.name)
+
+
 class Fact(Column):
 
     ldmType = 'FACT'
@@ -117,8 +128,8 @@ class Label(Column):
         maql = []
         maql.append('# ADD LABELS TO ATTRIBUTES')
         maql.append('ALTER ATTRIBUTE {attr.%s.%s} ADD LABELS {label.%s.%s.%s} VISUAL(TITLE "%s") AS {f_%s.nm_%s};' \
-                    % (self.schema_name, self.reference, self.schema_name, 
-                       self.reference, self.name, self.title, self.schema_name, 
+                    % (self.schema_name, self.reference, self.schema_name,
+                       self.reference, self.name, self.title, self.schema_name,
                        self.name))
         # TODO: DATATYPE
         maql.append('')
@@ -126,5 +137,5 @@ class Label(Column):
 
     def get_maql_default(self):
         return 'ALTER ATTRIBUTE  {attr.%s.%s} DEFAULT LABEL {label.%s.%s.%s};'\
-                        % (self.schema_name, self.reference, self.schema_name, 
+                        % (self.schema_name, self.reference, self.schema_name,
                            self.reference, self.name)

@@ -1,5 +1,6 @@
 from gooddataclient.text import to_identifier, to_title
-from gooddataclient.columns import Attribute, Fact, Date, Reference, Label
+from gooddataclient.columns import Attribute, Fact, Date, Reference, Label, \
+    ConnectionPoint
 
 def maql_create(schema_name):
     return """
@@ -53,7 +54,7 @@ def maql_facts(schema_name, column_list):
             maql.append(Fact(schema_name=schema_name, name=column['name'], title=column['title'],
                                   folder=column['folder'] if 'folder' in column else None,
                                   dataType=column['dataType'] if 'dataType' in column else None).get_maql())
-            
+
     return '\n'.join(maql)
 
 def maql_date_facts(schema_name, column_list):
@@ -97,16 +98,24 @@ def maql_labels(schema_name, column_list):
                 maql.append(label.get_maql_default())
                 default_set = True
 
-    cp = None
+    cp = False
     for column in column_list:
         if column['ldmType'] == 'CONNECTION_POINT':
-            cp = column
+            cp = True
+            maql.append(ConnectionPoint(schema_name=schema_name, name=column['name'], title=column['title'],
+                                  folder=column['folder'] if 'folder' in column else None,
+                                  dataType=column['dataType'] if 'dataType' in column else None,
+                                  schemaReference=column['schemaReference'] if 'schemaReference' in column else None,
+                                  reference=column['reference'] if 'reference' in column else None,
+                                  datetime=('datetime' in column)).get_original_label_maql())
 
-    maql.append('ALTER ATTRIBUTE {attr.%s.%s} ADD LABELS {label.%s.%s} VISUAL(TITLE "%s") AS {f_%s.nm_%s};'\
-                % (to_identifier(schema_name), to_identifier(cp['name'] if cp else schema_name),
-                   to_identifier(schema_name), to_identifier(cp['name'] if cp else schema_name),
-                   to_title(cp['title'] if cp else schema_name), to_identifier(schema_name),
-                   to_identifier(cp['name'] if cp else schema_name)))
+    # TODO: not sure where this came from in Department example, wild guess only!
+    if not cp:
+        maql.append('ALTER ATTRIBUTE {attr.%s.%s} ADD LABELS {label.%s.%s} VISUAL(TITLE "%s") AS {f_%s.nm_%s};'\
+                % (to_identifier(schema_name), to_identifier(schema_name),
+                   to_identifier(schema_name), to_identifier(schema_name),
+                   to_title(schema_name), to_identifier(schema_name),
+                   to_identifier(schema_name)))
     return '\n'.join(maql)
 
 def maql_synchronize(schema_name):
