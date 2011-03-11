@@ -1,15 +1,18 @@
 from gooddataclient.dataset import Dataset
+from gooddataclient.columns import ConnectionPoint, Fact, Date
 
 class Forex(Dataset):
 
-    column_list = [{'name': 'id', 'title': 'Id', 'ldmType': 'CONNECTION_POINT', 'dataType': 'IDENTITY'},
-                   {'name': 'time', 'title': 'TIME', 'ldmType': 'DATE', 'datetime': 'true', 'folder': 'Forex', 'schemaReference': 'Forex', 'format': 'dd-MM-yyyy HH:mm:ss'},
-                   {'name': 'volume', 'title': 'VOLUME', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-                   {'name': 'open', 'title': 'OPEN', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-                   {'name': 'close', 'title': 'CLOSE', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-                   {'name': 'min', 'title': 'MIN', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-                   {'name': 'max', 'title': 'MAX', 'ldmType': 'FACT', 'dataType': 'DECIMAL(8,4)', 'folder': 'Forex'},
-                   ]
+    id = ConnectionPoint(title='Id', dataType='IDENTITY')
+    time = Date(title='TIME', datetime=True, folder='Forex', schemaReference='Forex', format='dd-MM-yyyy HH:mm:ss')
+    volume = Fact(title='VOLUME', dataType='DECIMAL(8,4)', folder='Forex')
+    open = Fact(title='OPEN', dataType='DECIMAL(8,4)', folder='Forex')
+    close = Fact(title='CLOSE', dataType='DECIMAL(8,4)', folder='Forex')
+    min = Fact(title='MIN', dataType='DECIMAL(8,4)', folder='Forex')
+    max = Fact(title='MAX', dataType='DECIMAL(8,4)', folder='Forex')
+
+    class Meta:
+        column_order = ('id', 'time', 'volume', 'open', 'close', 'min', 'max')
 
     @property
     def schema_name(self):

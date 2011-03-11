@@ -1,12 +1,12 @@
 from gooddataclient.dataset import Dataset
+from gooddataclient.columns import ConnectionPoint, Date, Fact, Reference
 
 class Salary(Dataset):
 
-    column_list = [{'name': 'salary', 'title': 'Salary', 'ldmType': 'CONNECTION_POINT', 'folder': 'Salary'},
-                   {'name': 'employee', 'title': 'Employee', 'ldmType': 'REFERENCE', 'reference': 'employee', 'schemaReference': 'Employee', 'folder': 'Salary'},
-                   {'name': 'payment', 'title': 'Payment', 'ldmType': 'FACT', 'folder': 'Salary'},
-                   {'name': 'payday', 'title': 'Pay Day', 'ldmType': 'DATE', 'format': 'yyyy-MM-dd', 'schemaReference': 'payment', 'folder': 'Salary'},
-                   ]
+    salary = ConnectionPoint(title='Salary', folder='Salary')
+    employee = Reference(title='Employee', reference='employee', schemaReference='Employee', folder='Salary')
+    payment = Fact(title='Payment', folder='Salary')
+    payday = Date(title='Pay Day', format='yyyy-MM-dd', schemaReference='payment', folder='Salary')
 
     def data(self):
         return [{'salary': 's1', 'employee': 'e1', 'payday': '2006-01-01', 'payment': '10230', 'payday_dt': '38717'},

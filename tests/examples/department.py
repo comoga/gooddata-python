@@ -1,10 +1,10 @@
 from gooddataclient.dataset import Dataset
+from gooddataclient import columns
 
 class Department(Dataset):
 
-    column_list = [{'name': 'department', 'title': 'Department', 'ldmType': 'ATTRIBUTE', 'folder': 'Department'},
-                   {'name': 'name', 'title': 'Name', 'ldmType': 'LABEL', 'reference': 'department', 'folder': 'Department'},
-                   ]
+    department = columns.Attribute(title='Department', folder='Department')
+    name = columns.Label(title='Name', reference='department', folder='Department')
 
     def data(self):
         #data from django model like Department.object.values('department', 'name')

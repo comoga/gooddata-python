@@ -5,16 +5,17 @@ class Column(object):
 
     ldmType = None
 
-    def __init__(self, schema_name, name, title, folder=None, reference=None,
-                 schemaReference=None, dataType=None, datetime=False):
-        self.schema_name = to_identifier(schema_name)
+    def __init__(self, title, name=None,folder=None, reference=None,
+                 schemaReference=None, dataType=None, datetime=False, format=None):
         self.name = to_identifier(name)
         self.title = to_title(title)
         self.folder = to_identifier(folder)
+        self.folder_title = to_title(folder)
         self.reference = to_identifier(reference)
         self.schemaReference = to_identifier(schemaReference)
         self.dataType = dataType
         self.datetime = datetime
+        self.format = format
 
 
 class Attribute(Column):

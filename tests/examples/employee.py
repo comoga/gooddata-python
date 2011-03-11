@@ -1,12 +1,12 @@
 from gooddataclient.dataset import Dataset
+from gooddataclient.columns import ConnectionPoint, Label, Reference
 
 class Employee(Dataset):
 
-    column_list = [{'name': 'employee', 'title': 'Employee', 'ldmType': 'CONNECTION_POINT', 'folder': 'Employee'},
-                   {'name': 'firstname', 'title': 'First Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
-                   {'name': 'lastname', 'title': 'Last Name', 'ldmType': 'LABEL', 'reference': 'employee', 'folder': 'Employee'},
-                   {'name': 'department', 'title': 'Department', 'ldmType': 'REFERENCE', 'reference': 'department', 'schemaReference': 'Department', 'folder': 'Employee'},
-                   ]
+    employee = ConnectionPoint(title='Employee', folder='Employee')
+    firstname = Label(title='First Name', reference='employee', folder='Employee')
+    lastname = Label(title='Last Name', reference='employee', folder='Employee')
+    department = Reference(title='Department', reference='department', schemaReference='Department', folder='Employee')
 
     def data(self):
         return [{'employee': 'e1', 'lastname': 'Nowmer', 'department': 'd1', 'firstname': 'Sheri'},

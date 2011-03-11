@@ -1,19 +1,19 @@
 import os
 import logging
+import inspect
 
 from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import text
 from gooddataclient.manifest import get_sli_manifest
 from gooddataclient.maql import maql_dataset
+from gooddataclient.columns import Column
+from gooddataclient.text import to_identifier
 
 logger = logging.getLogger("gooddataclient")
 
 class Dataset(object):
 
     DATASETS_URI = '/gdc/md/%s/data/sets'
-
-    # Defined in child class
-    column_list = None
 
     def __init__(self, project):
         self.project = project
@@ -22,6 +22,30 @@ class Dataset(object):
     @property
     def schema_name(self):
         return self.__class__.__name__
+
+    class Meta:
+        column_order = None
+
+
+    def get_class_members(self):
+        members = inspect.getmembers(self, lambda member: isinstance(member, Column))
+        if not self.Meta.column_order:
+            return members
+        members_ordered = []
+        for col_name in self.Meta.column_order:
+            for name, column in members:
+                if name == col_name:
+                    members_ordered.append((name, column))
+        return members_ordered
+
+    def get_columns(self):
+        columns = []
+        for name, column in self.get_class_members():
+            if not column.name:
+                column.name = to_identifier(name)
+            column.schema_name = to_identifier(self.schema_name)
+            columns.append(column)
+        return columns
 
     def get_datasets_metadata(self):
         return self.connection.request(self.DATASETS_URI % self.project.id)
