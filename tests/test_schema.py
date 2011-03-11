@@ -13,8 +13,7 @@ class TestSchema(unittest.TestCase):
         for (example, ExampleDataset) in examples.examples:
             schema = parseString(example.schema_xml.replace(' ', '').replace('\n', ''))
             dataset = ExampleDataset(Project(None))
-            gen_schema = parseString(get_xml_schema(dataset.column_list,
-                                                    dataset.schema_name))
+            gen_schema = parseString(get_xml_schema(dataset))
             # TODO: test for XML content (not so easily comparable)
             self.assertEqual(len(schema.childNodes), len(gen_schema.childNodes))
             self.assertEqual(len(schema.childNodes[0].childNodes), len(gen_schema.childNodes[0].childNodes),

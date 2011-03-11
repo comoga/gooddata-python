@@ -5,9 +5,9 @@ import inspect
 from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import text
 from gooddataclient.manifest import get_sli_manifest
-from gooddataclient.maql import maql_dataset
-from gooddataclient.columns import Column
-from gooddataclient.text import to_identifier
+from gooddataclient.columns import Column, Date, Attribute, ConnectionPoint, \
+    Label, Reference, Fact
+from gooddataclient.text import to_identifier, to_title
 
 logger = logging.getLogger("gooddataclient")
 
@@ -41,8 +41,7 @@ class Dataset(object):
     def get_columns(self):
         columns = []
         for name, column in self.get_class_members():
-            if not column.name:
-                column.name = to_identifier(name)
+            column.name = to_identifier(name)
             column.schema_name = to_identifier(self.schema_name)
             columns.append(column)
         return columns
@@ -65,15 +64,15 @@ class Dataset(object):
         raise NotImplementedError
 
     def get_date_dimension(self):
-        for column in self.column_list:
-            if column['ldmType'] == 'DATE':
+        for column in self.get_columns():
+            if isinstance(column, Date):
                 return column
 
     def create(self):
         date_dimension = self.get_date_dimension()
         if date_dimension:
-            DateDimension(self.project).create(name=date_dimension['schemaReference'],
-                                               include_time=('datetime' in date_dimension))
+            DateDimension(self.project).create(name=date_dimension.schemaReference,
+                                               include_time=date_dimension.datetime)
         self.project.execute_maql(self.get_maql())
 
     def upload(self):
@@ -81,13 +80,97 @@ class Dataset(object):
             self.get_metadata(self.schema_name)
         except DataSetNotFoundError:
             self.create()
-        sli_manifest = get_sli_manifest(self.column_list, self.schema_name)
+        sli_manifest = get_sli_manifest(self.get_columns(), self.schema_name)
         dir_name = self.connection.webdav.upload(self.data(), sli_manifest)
         self.project.integrate_uploaded_data(dir_name)
         self.connection.webdav.delete(dir_name)
 
+    def get_folders(self):
+        attribute_folders, fact_folders = [], []
+        for column in self.get_columns():
+            if column.folder:
+                if isinstance(column, (Attribute, Label, ConnectionPoint, Reference, Date)):
+                    if (column.folder, column.folder_title) not in attribute_folders:
+                        attribute_folders.append((column.folder, column.folder_title))
+                if isinstance(column, (Fact, Date)):
+                    if (column.folder, column.folder_title) not in fact_folders:
+                        fact_folders.append((column.folder, column.folder_title))
+        return attribute_folders, fact_folders
+
     def get_maql(self):
-        return maql_dataset(self.schema_name, self.column_list)
+        maql = []
+
+        maql.append("""
+# THIS IS MAQL SCRIPT THAT GENERATES PROJECT LOGICAL MODEL.
+# SEE THE MAQL DOCUMENTATION AT http://developer.gooddata.com/api/maql-ddl.html FOR MORE DETAILS
+
+# CREATE DATASET. DATASET GROUPS ALL FOLLOWING LOGICAL MODEL ELEMENTS TOGETHER.
+CREATE DATASET {dataset.%s} VISUAL(TITLE "%s");
+""" % (to_identifier(self.schema_name), to_title(self.schema_name)))
+
+        attribute_folders, fact_folders = self.get_folders()
+        if attribute_folders or fact_folders:
+            maql.append('# CREATE THE FOLDERS THAT GROUP ATTRIBUTES AND FACTS')
+            for folder, folder_title in attribute_folders:
+                maql.append('CREATE FOLDER {dim.%s} VISUAL(TITLE "%s") TYPE ATTRIBUTE;' \
+                            % (folder, folder_title))
+            maql.append('')
+            for folder, folder_title in fact_folders:
+                maql.append('CREATE FOLDER {ffld.%s} VISUAL(TITLE "%s") TYPE FACT;' \
+                            % (folder, folder_title))
+            maql.append('')
+
+        maql.append('# CREATE ATTRIBUTES.\n# ATTRIBUTES ARE CATEGORIES THAT ARE USED FOR SLICING AND DICING THE NUMBERS (FACTS)')
+
+        column_list = self.get_columns()
+
+        for column in column_list:
+            if isinstance(column, (Attribute, ConnectionPoint))\
+                or (isinstance(column, Date) and not column.schemaReference):
+                maql.append(column.get_maql())
+
+        maql.append('# CREATE FACTS\n# FACTS ARE NUMBERS THAT ARE AGGREGATED BY ATTRIBUTES.')
+        for column in column_list:
+            if isinstance(column, Fact):
+                maql.append(column.get_maql())
+
+        maql.append('# CREATE DATE FACTS\n# DATES ARE REPRESENTED AS FACTS\n# DATES ARE ALSO CONNECTED TO THE DATE DIMENSIONS')
+        for column in column_list:
+            if isinstance(column, Date) and column.schemaReference:
+                maql.append(column.get_maql())
+
+        maql.append('# CREATE REFERENCES\n# REFERENCES CONNECT THE DATASET TO OTHER DATASETS')
+        for column in column_list:
+            if isinstance(column, Reference):
+                maql.append(column.get_maql())
+
+        default_set = False
+        for column in column_list:
+            if isinstance(column, Label):
+                maql.append(column.get_maql())
+                if not default_set:
+                    maql.append(column.get_maql_default())
+                    default_set = True
+
+        cp = False
+        for column in column_list:
+            if isinstance(column, ConnectionPoint):
+                cp = True
+                maql.append(column.get_original_label_maql())
+
+        # TODO: not sure where this came from in Department example, wild guess only!
+        if not cp:
+            maql.append('ALTER ATTRIBUTE {attr.%s.%s} ADD LABELS {label.%s.%s} VISUAL(TITLE "%s") AS {f_%s.nm_%s};'\
+                    % (to_identifier(self.schema_name), to_identifier(self.schema_name),
+                       to_identifier(self.schema_name), to_identifier(self.schema_name),
+                       to_title(self.schema_name), to_identifier(self.schema_name),
+                       to_identifier(self.schema_name)))
+
+        maql.append("""# SYNCHRONIZE THE STORAGE AND DATA LOADING INTERFACES WITH THE NEW LOGICAL MODEL
+SYNCHRONIZE {dataset.%s};
+""" % to_identifier(self.schema_name))
+
+        return '\n'.join(maql)
 
 
 class DateDimension(object):

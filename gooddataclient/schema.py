@@ -1,22 +1,13 @@
 from xml.dom.minidom import parseString
 
-def get_xml_schema(column_list, schema_name):
+def get_xml_schema(dataset):
     '''Create XML schema from list of columns in dicts. It's used to create
     MAQL through the Java Client.
-    
-    The column_list looks like this: 
-    [{'name': 'id', 'title': 'Id', 'ldmType': 'ATTRIBUTE', 'folder': 'X'},
-     {'name': 'price', 'title': 'Price', 'ldmType': 'FACT', 'dataType': 'DECIMAL', 'folder': 'X'},
-    ...
-    ]
-    
-    @param column_list: List of columns
-    @param schema_name: name of the schema
     '''
-    dom = parseString('<schema><name>%s</name><columns></columns></schema>' % schema_name)
-    for column in column_list:
+    dom = parseString('<schema><name>%s</name><columns></columns></schema>' % dataset.schema_name)
+    for column in dataset.get_columns():
         xmlcol = dom.createElement('column')
-        for key, val in column.iteritems():
+        for key, val in column.get_schema_values():
             k = dom.createElement(key)
             v = dom.createTextNode(val)
             k.appendChild(v)

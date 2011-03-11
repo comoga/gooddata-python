@@ -1,38 +1,38 @@
 from gooddataclient import text
 from gooddataclient.archiver import CSV_DATA_FILENAME
 from gooddataclient.text import to_identifier
+from gooddataclient.columns import Attribute, ConnectionPoint, Reference, Date,\
+    Label, Fact
+
+# TODO: put this into columns and dataset
 
 def get_column_populates(column, schema_name):
     schema_name_id = text.to_identifier(schema_name)
-    column_name_id = text.to_identifier(column['name'])
-    if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT'):
-        return ["label.%s.%s" % (schema_name_id, column_name_id)]
-    if column['ldmType'] in ('LABEL'):
-        return ["label.%s.%s.%s" % (schema_name_id,
-                                    text.to_identifier(column['reference']),
-                                    column_name_id)]
-    if column['ldmType'] in ('REFERENCE'):
-        return ["label.%s.%s" % (text.to_identifier(column['schemaReference']),
-                                 text.to_identifier(column['reference']))]
-    if column['ldmType'] in ('FACT'):
-        return ["fact.%s.%s" % (schema_name_id, column_name_id)]
-    if column['ldmType'] in ('DATE'):
-        return ["%s.date.mdyy" % text.to_identifier(column['schemaReference'])]
+    if isinstance(column, (Attribute, ConnectionPoint)):
+        return ["label.%s.%s" % (schema_name_id, column.name)]
+    if isinstance(column, Label):
+        return ["label.%s.%s.%s" % (schema_name_id, column.reference, column.name)]
+    if isinstance(column, Reference):
+        return ["label.%s.%s" % (column.schemaReference, column.reference)]
+    if isinstance(column, Fact):
+        return ["fact.%s.%s" % (schema_name_id, column.name)]
+    if isinstance(column, Date):
+        return ["%s.date.mdyy" % column.schemaReference]
     raise AttributeError, 'Nothing to populate'
 
 def get_date_dt_column(column, schema_name):
-    name = '%s_dt' % column['name']
-    populates = 'dt.%s.%s' % (text.to_identifier(schema_name), text.to_identifier(column['name']))
+    name = '%s_dt' % column.name
+    populates = 'dt.%s.%s' % (text.to_identifier(schema_name), column.name)
     return {'populates': [populates], 'columnName': name, 'mode': 'FULL'}
 
 def get_time_tm_column(column, schema_name):
-    name = '%s_tm' % column['name']
-    populates = 'tm.dt.%s.%s' % (text.to_identifier(schema_name), text.to_identifier(column['name']))
+    name = '%s_tm' % column.name
+    populates = 'tm.dt.%s.%s' % (text.to_identifier(schema_name), column.name)
     return {'populates': [populates], 'columnName': name, 'mode': 'FULL'}
 
 def get_tm_time_id_column(column, schema_name):
-    name = 'tm_%s_id' % text.to_identifier(column['name'])
-    populates = 'label.time.second.of.day.%s' % text.to_identifier(column['schemaReference'])
+    name = 'tm_%s_id' % column.name
+    populates = 'label.time.second.of.day.%s' % column.schemaReference
     return {'populates': [populates], 'columnName': name, 'mode': 'FULL', 'referenceKey': 1}
 
 def get_sli_manifest(column_list, schema_name):
@@ -46,21 +46,20 @@ def get_sli_manifest(column_list, schema_name):
     parts = []
     for column in column_list:
         # special additional column for date
-        if column['ldmType'] == 'DATE':
+        if isinstance(column, Date):
             parts.append(get_date_dt_column(column, schema_name))
-            if 'datetime' in column:
+            if column.datetime:
                 parts.append(get_time_tm_column(column, schema_name))
                 parts.append(get_tm_time_id_column(column, schema_name))
 
 
-        part = {"columnName": column['name'],
+        part = {"columnName": column.name,
                 "mode": "FULL",
                 }
-        if column['ldmType'] in ('ATTRIBUTE', 'CONNECTION_POINT', 'REFERENCE',
-                                 'DATE'):
+        if isinstance(column, (Attribute, ConnectionPoint, Reference, Date)):
             part["referenceKey"] = 1
-        if 'format' in column:
-            part['constraints'] = {'date': column['format']}
+        if column.format:
+            part['constraints'] = {'date': column.format}
         try:
             part['populates'] = get_column_populates(column, schema_name)
         except AttributeError:

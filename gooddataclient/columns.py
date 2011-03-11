@@ -5,9 +5,8 @@ class Column(object):
 
     ldmType = None
 
-    def __init__(self, title, name=None,folder=None, reference=None,
+    def __init__(self, title, folder=None, reference=None,
                  schemaReference=None, dataType=None, datetime=False, format=None):
-        self.name = to_identifier(name)
         self.title = to_title(title)
         self.folder = to_identifier(folder)
         self.folder_title = to_title(folder)
@@ -16,6 +15,17 @@ class Column(object):
         self.dataType = dataType
         self.datetime = datetime
         self.format = format
+
+    def get_schema_values(self):
+        values = []
+        for key in ('name', 'title', 'folder', 'reference', 'schemaReference',
+                    'dataType', 'datetime', 'format'):
+            value = getattr(self, key)
+            if value:
+                if isinstance(value, bool):
+                    value = 'true'
+                values.append((key, value))
+        return values
 
 
 class Attribute(Column):
@@ -138,5 +148,5 @@ class Label(Column):
 
     def get_maql_default(self):
         return 'ALTER ATTRIBUTE  {attr.%s.%s} DEFAULT LABEL {label.%s.%s.%s};'\
-                        % (self.schema_name, self.reference, self.schema_name,
-                           self.reference, self.name)
+                % (self.schema_name, self.reference, self.schema_name,
+                   self.reference, self.name)

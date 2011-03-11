@@ -24,8 +24,8 @@ class TestDataset(unittest.TestCase):
             dataset = ExampleDataset(self.project)
             date_dimension = dataset.get_date_dimension()
             if date_dimension:
-                DateDimension(self.project).create(name=date_dimension['schemaReference'],
-                               include_time=('datetime' in date_dimension))
+                DateDimension(self.project).create(name=date_dimension.schemaReference,
+                               include_time=date_dimension.datetime)
                 # TODO: verify the creation
 
     def test_upload_dataset(self):

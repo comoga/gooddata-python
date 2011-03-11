@@ -8,6 +8,10 @@ class Salary(Dataset):
     payment = Fact(title='Payment', folder='Salary')
     payday = Date(title='Pay Day', format='yyyy-MM-dd', schemaReference='payment', folder='Salary')
 
+    class Meta:
+        column_order = ('salary', 'employee', 'payment', 'payday')
+
+
     def data(self):
         return [{'salary': 's1', 'employee': 'e1', 'payday': '2006-01-01', 'payment': '10230', 'payday_dt': '38717'},
                  {'salary': 's2', 'employee': 'e2', 'payday': '2006-01-01', 'payment': '4810', 'payday_dt': '38717'},

@@ -2,7 +2,6 @@ import unittest
 import difflib
 
 from gooddataclient.project import Project
-from gooddataclient.maql import maql_dataset
 
 from tests import logger, examples
 
@@ -11,7 +10,7 @@ class TestMaql(unittest.TestCase):
     def test_dataset_maql(self):
         for (example, ExampleDataset) in examples.examples:
             dataset = ExampleDataset(Project(None))
-            maql_generated = maql_dataset(dataset)
+            maql_generated = dataset.get_maql()
             diff = '\n'.join(difflib.unified_diff(maql_generated.splitlines(),
                                                   example.maql.splitlines(),
                                                   lineterm=''))

@@ -8,6 +8,10 @@ class Employee(Dataset):
     lastname = Label(title='Last Name', reference='employee', folder='Employee')
     department = Reference(title='Department', reference='department', schemaReference='Department', folder='Employee')
 
+    class Meta:
+        column_order = ('employee', 'firstname', 'lastname', 'department')
+
+
     def data(self):
         return [{'employee': 'e1', 'lastname': 'Nowmer', 'department': 'd1', 'firstname': 'Sheri'},
              {'employee': 'e2', 'lastname': 'Whelply', 'department': 'd1', 'firstname': 'Derrick'},
