@@ -4,6 +4,7 @@ from gooddataclient.text import to_identifier, to_title
 class Column(object):
 
     ldmType = None
+    referenceKey = False
 
     def __init__(self, title, folder=None, reference=None,
                  schemaReference=None, dataType=None, datetime=False, format=None):
@@ -27,6 +28,20 @@ class Column(object):
                 values.append((key, value))
         return values
 
+    def get_sli_manifest_part(self):
+        part = {"columnName": self.name,
+                "mode": "FULL",
+                }
+        if self.referenceKey:
+            part["referenceKey"] = 1
+        if self.format:
+            part['constraints'] = {'date': self.format}
+        try:
+            part['populates'] = self.populates()
+        except NotImplementedError:
+            pass
+        return part
+
     def populates(self):
         raise NotImplementedError
 
@@ -34,6 +49,7 @@ class Column(object):
 class Attribute(Column):
 
     ldmType = 'ATTRIBUTE'
+    referenceKey = True
 
     def get_maql(self):
         folder_statement = ''
@@ -97,6 +113,7 @@ class Fact(Column):
 class Date(Column):
 
     ldmType = 'DATE'
+    referenceKey = True
 
     def get_maql(self):
         folder_statement = ''
@@ -130,6 +147,7 @@ class Date(Column):
 class Reference(Column):
 
     ldmType = 'REFERENCE'
+    referenceKey = True
 
     def get_maql(self):
         maql = []
@@ -167,6 +185,7 @@ class Label(Column):
         return ["label.%s.%s.%s" % (self.schema_name, self.reference, self.name)]
 
 
+# TODO: create proper columns with utilizing get_sli_manifest_part method
 def get_date_dt_column(column, schema_name):
     name = '%s_dt' % column.name
     populates = 'dt.%s.%s' % (to_identifier(schema_name), column.name)

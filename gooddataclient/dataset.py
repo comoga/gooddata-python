@@ -101,9 +101,6 @@ class Dataset(object):
     def get_sli_manifest(self):
         '''Create JSON manifest from columns in schema.
         
-        @param column_list: list of dicts (created from XML schema)
-        @param schema_name: string
-        
         See populateColumnsFromSchema in AbstractConnector.java
         '''
         parts = []
@@ -115,19 +112,7 @@ class Dataset(object):
                     parts.append(get_time_tm_column(column, self.schema_name))
                     parts.append(get_tm_time_id_column(column, self.schema_name))
 
-
-            part = {"columnName": column.name,
-                    "mode": "FULL",
-                    }
-            if isinstance(column, (Attribute, ConnectionPoint, Reference, Date)):
-                part["referenceKey"] = 1
-            if column.format:
-                part['constraints'] = {'date': column.format}
-            try:
-                part['populates'] = column.populates()
-            except NotImplementedError:
-                pass
-            parts.append(part)
+            parts.append(column.get_sli_manifest_part())
 
         return {"dataSetSLIManifest": {"parts": parts,
                                        "file": CSV_DATA_FILENAME,
