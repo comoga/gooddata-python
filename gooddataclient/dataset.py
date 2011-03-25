@@ -4,10 +4,9 @@ import inspect
 
 from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import text
-from gooddataclient.manifest import get_column_populates, \
-    get_date_dt_column, get_time_tm_column, get_tm_time_id_column
 from gooddataclient.columns import Column, Date, Attribute, ConnectionPoint, \
-    Label, Reference, Fact
+    Label, Reference, Fact, get_date_dt_column, get_time_tm_column,\
+    get_tm_time_id_column, get_column_populates
 from gooddataclient.text import to_identifier, to_title
 from gooddataclient.archiver import CSV_DATA_FILENAME
 
