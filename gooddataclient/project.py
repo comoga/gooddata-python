@@ -22,7 +22,6 @@ def delete_projects_by_name(connection, name):
 class Project(object):
 
     PROJECTS_URI = '/gdc/projects'
-    DATASETS_URI = '/gdc/md/%s/data/sets'
     MAQL_EXEC_URI = '/gdc/md/%s/ldm/manage'
     PULL_URI = '/gdc/md/%s/etl/pull'
 
