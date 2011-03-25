@@ -4,10 +4,12 @@ import inspect
 
 from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import text
-from gooddataclient.manifest import get_sli_manifest
+from gooddataclient.manifest import get_column_populates, \
+    get_date_dt_column, get_time_tm_column, get_tm_time_id_column
 from gooddataclient.columns import Column, Date, Attribute, ConnectionPoint, \
     Label, Reference, Fact
 from gooddataclient.text import to_identifier, to_title
+from gooddataclient.archiver import CSV_DATA_FILENAME
 
 logger = logging.getLogger("gooddataclient")
 
@@ -80,8 +82,7 @@ class Dataset(object):
             self.get_metadata(self.schema_name)
         except DataSetNotFoundError:
             self.create()
-        sli_manifest = get_sli_manifest(self.get_columns(), self.schema_name)
-        dir_name = self.connection.webdav.upload(self.data(), sli_manifest)
+        dir_name = self.connection.webdav.upload(self.data(), self.get_sli_manifest())
         self.project.integrate_uploaded_data(dir_name)
         self.connection.webdav.delete(dir_name)
 
@@ -96,6 +97,48 @@ class Dataset(object):
                     if (column.folder, column.folder_title) not in fact_folders:
                         fact_folders.append((column.folder, column.folder_title))
         return attribute_folders, fact_folders
+
+
+    def get_sli_manifest(self):
+        '''Create JSON manifest from columns in schema.
+        
+        @param column_list: list of dicts (created from XML schema)
+        @param schema_name: string
+        
+        See populateColumnsFromSchema in AbstractConnector.java
+        '''
+        parts = []
+        for column in self.get_columns():
+            # special additional column for date
+            if isinstance(column, Date):
+                parts.append(get_date_dt_column(column, self.schema_name))
+                if column.datetime:
+                    parts.append(get_time_tm_column(column, self.schema_name))
+                    parts.append(get_tm_time_id_column(column, self.schema_name))
+
+
+            part = {"columnName": column.name,
+                    "mode": "FULL",
+                    }
+            if isinstance(column, (Attribute, ConnectionPoint, Reference, Date)):
+                part["referenceKey"] = 1
+            if column.format:
+                part['constraints'] = {'date': column.format}
+            try:
+                part['populates'] = get_column_populates(column, self.schema_name)
+            except AttributeError:
+                pass
+            parts.append(part)
+
+        return {"dataSetSLIManifest": {"parts": parts,
+                                       "file": CSV_DATA_FILENAME,
+                                       "dataSet": 'dataset.%s' % to_identifier(self.schema_name),
+                                       "csvParams": {"quoteChar": '"',
+                                                     "escapeChar": '"',
+                                                     "separatorChar": ",",
+                                                     "endOfLine": "\n"
+                                                     }}}
+
 
     def get_maql(self):
         maql = []

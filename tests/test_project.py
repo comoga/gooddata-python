@@ -2,7 +2,6 @@ import unittest
 
 from gooddataclient.connection import Connection
 from gooddataclient.project import Project, delete_projects_by_name
-from gooddataclient.dataset import DateDimension
 from gooddataclient.exceptions import DataSetNotFoundError,\
     ProjectNotOpenedError, ProjectNotFoundError, MaqlExecutionFailed
 

@@ -47,6 +47,11 @@ class TestDataset(unittest.TestCase):
         self.assertEquals(examples.forex.date_dimension_maql.replace('forex', 'xerof').replace('Forex', 'Xerof'),
                           date_dimension.get_maql('Xerof', include_time=True))
 
+    def test_sli_manifest(self):
+        for (example, ExampleDataset) in examples.examples:
+            dataset = ExampleDataset(Project(None))
+            sli_manifest = dataset.get_sli_manifest()
+            self.assertEqual(example.sli_manifest, sli_manifest)
 
 
 if __name__ == '__main__':

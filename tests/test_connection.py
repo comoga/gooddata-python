@@ -3,12 +3,10 @@ import unittest
 from zipfile import ZipFile
 
 from gooddataclient.connection import Connection
-from gooddataclient.exceptions import AuthenticationError, ProjectNotOpenedError,\
-    ProjectNotFoundError
+from gooddataclient.exceptions import AuthenticationError
 from gooddataclient.archiver import write_tmp_file
 
 from tests.credentials import username, password
-from tests.test_project import TEST_PROJECT_NAME
 from tests import logger, examples
 
 
