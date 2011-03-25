@@ -27,6 +27,9 @@ class Column(object):
                 values.append((key, value))
         return values
 
+    def populates(self):
+        raise NotImplementedError
+
 
 class Attribute(Column):
 
@@ -52,6 +55,8 @@ class Attribute(Column):
             maql.append('')
         return '\n'.join(maql)
 
+    def populates(self):
+        return ["label.%s.%s" % (self.schema_name, self.name)]
 
 class ConnectionPoint(Attribute):
 
@@ -86,6 +91,8 @@ class Fact(Column):
             maql.append('')
         return '\n'.join(maql)
 
+    def populates(self):
+        return ["fact.%s.%s" % (self.schema_name, self.name)]
 
 class Date(Column):
 
@@ -117,6 +124,8 @@ class Date(Column):
                         % (self.schemaReference, self.schema_name, self.name))
         return '\n'.join(maql)
 
+    def populates(self):
+        return ["%s.date.mdyy" % self.schemaReference]
 
 class Reference(Column):
 
@@ -129,6 +138,9 @@ class Reference(Column):
                     % (self.schemaReference, self.reference, self.schema_name,
                        self.name))
         return '\n'.join(maql)
+
+    def populates(self):
+        return ["label.%s.%s" % (self.schemaReference, self.reference)]
 
 
 class Label(Column):
@@ -151,20 +163,9 @@ class Label(Column):
                 % (self.schema_name, self.reference, self.schema_name,
                    self.reference, self.name)
 
+    def populates(self):
+        return ["label.%s.%s.%s" % (self.schema_name, self.reference, self.name)]
 
-def get_column_populates(column, schema_name):
-    schema_name_id = to_identifier(schema_name)
-    if isinstance(column, (Attribute, ConnectionPoint)):
-        return ["label.%s.%s" % (schema_name_id, column.name)]
-    if isinstance(column, Label):
-        return ["label.%s.%s.%s" % (schema_name_id, column.reference, column.name)]
-    if isinstance(column, Reference):
-        return ["label.%s.%s" % (column.schemaReference, column.reference)]
-    if isinstance(column, Fact):
-        return ["fact.%s.%s" % (schema_name_id, column.name)]
-    if isinstance(column, Date):
-        return ["%s.date.mdyy" % column.schemaReference]
-    raise AttributeError, 'Nothing to populate'
 
 def get_date_dt_column(column, schema_name):
     name = '%s_dt' % column.name

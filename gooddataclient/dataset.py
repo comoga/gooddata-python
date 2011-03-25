@@ -6,7 +6,7 @@ from gooddataclient.exceptions import DataSetNotFoundError
 from gooddataclient import text
 from gooddataclient.columns import Column, Date, Attribute, ConnectionPoint, \
     Label, Reference, Fact, get_date_dt_column, get_time_tm_column,\
-    get_tm_time_id_column, get_column_populates
+    get_tm_time_id_column
 from gooddataclient.text import to_identifier, to_title
 from gooddataclient.archiver import CSV_DATA_FILENAME
 
@@ -124,8 +124,8 @@ class Dataset(object):
             if column.format:
                 part['constraints'] = {'date': column.format}
             try:
-                part['populates'] = get_column_populates(column, self.schema_name)
-            except AttributeError:
+                part['populates'] = column.populates()
+            except NotImplementedError:
                 pass
             parts.append(part)
 
