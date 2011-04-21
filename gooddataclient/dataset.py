@@ -20,13 +20,19 @@ class Dataset(object):
         self.project = project
         self.connection = project.connection
 
-    @property
-    def schema_name(self):
-        return self.__class__.__name__
 
     class Meta:
         column_order = None
+        schema_name = None
+        project_name = None
 
+    @property
+    def schema_name(self):
+        return self.Meta.schema_name or self.__class__.__name__
+
+    @property
+    def project_name(self):
+        return self.Meta.project_name
 
     def get_class_members(self):
         members = inspect.getmembers(self, lambda member: isinstance(member, Column))

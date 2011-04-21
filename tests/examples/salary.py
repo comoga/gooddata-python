@@ -8,7 +8,7 @@ class Salary(Dataset):
     payment = Fact(title='Payment', folder='Salary')
     payday = Date(title='Pay Day', format='yyyy-MM-dd', schemaReference='payment', folder='Salary')
 
-    class Meta:
+    class Meta(Dataset.Meta):
         column_order = ('salary', 'employee', 'payment', 'payday')
 
 

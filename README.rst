@@ -42,12 +42,10 @@ Setting up the Dataset for Forex example::
 	    min = Fact(title='MIN', dataType='DECIMAL(8,4)', folder='Forex')
 	    max = Fact(title='MAX', dataType='DECIMAL(8,4)', folder='Forex')
 	
-	    class Meta:
+	    class Meta(Dataset.Meta):
 	        column_order = ('id', 'time', 'volume', 'open', 'close', 'min', 'max')
-	
-	    @property
-	    def schema_name(self):
-	        return 'forex'
+	        schema_name = 'forex'
+	        project_name = 'My Project'
 	
 	    def data(self):
 	        return [{'min': '1.0019', 'max': '1.0026', 'volume': '140', 'time_dt': '40485', 'time': '04-11-2010 00:48:01', 'time_tm': '2881', 'close': '1.0022', 'tm_time_id': '2881', 'open': '1.0023', 'id': 'a4aea808c4d9fc2a11771e7087177546'},

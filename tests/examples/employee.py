@@ -8,7 +8,7 @@ class Employee(Dataset):
     lastname = Label(title='Last Name', reference='employee', folder='Employee')
     department = Reference(title='Department', reference='department', schemaReference='Department', folder='Employee')
 
-    class Meta:
+    class Meta(Dataset.Meta):
         column_order = ('employee', 'firstname', 'lastname', 'department')
 
 
